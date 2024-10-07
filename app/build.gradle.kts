@@ -26,8 +26,15 @@ android {
 
 dependencies {
     implementation(projects.feature.weeklyhabits)
+
+    implementation(projects.core.designsystem)
+
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.navigation.compose)
+
     testImplementation(libs.junit)
+
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }
