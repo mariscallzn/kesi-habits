@@ -37,17 +37,13 @@ tasks {
 
 gradlePlugin {
     plugins {
-        register("androidApplication") {
-            id = "kesihabits.android.application"
-            implementationClass = "AndroidApplicationConventionPlugin"
-        }
-        register("androidFeature") {
-            id = "kesihabits.android.feature"
-            implementationClass = "AndroidFeatureConventionPlugin"
-        }
         register("androidApplicationCompose") {
             id = "kesihabits.android.application.compose"
             implementationClass = "AndroidApplicationComposeConventionPlugin"
+        }
+        register("androidApplication") {
+            id = "kesihabits.android.application"
+            implementationClass = "AndroidApplicationConventionPlugin"
         }
         register("androidLibraryCompose") {
             id = "kesihabits.android.library.compose"
@@ -57,13 +53,17 @@ gradlePlugin {
             id = "kesihabits.android.library"
             implementationClass = "AndroidLibraryConventionPlugin"
         }
-        register("androidRoom") {
-            id = "kesihabits.android.room"
-            implementationClass = "AndroidRoomConventionPlugin"
+        register("androidFeature") {
+            id = "kesihabits.android.feature"
+            implementationClass = "AndroidFeatureConventionPlugin"
         }
         register("hilt") {
             id = "kesihabits.hilt"
             implementationClass = "HiltConventionPlugin"
+        }
+        register("androidRoom") {
+            id = "kesihabits.android.room"
+            implementationClass = "AndroidRoomConventionPlugin"
         }
     }
 }

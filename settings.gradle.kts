@@ -24,3 +24,4 @@ rootProject.name = "kesihabits"
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 include(":app")
+include(":feature:weeklyhabits")
