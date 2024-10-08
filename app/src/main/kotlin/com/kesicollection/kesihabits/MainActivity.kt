@@ -17,7 +17,9 @@ import androidx.compose.ui.Modifier
 import com.kesicollection.core.designsystem.icon.KesiIcons
 import com.kesicollection.core.designsystem.theme.KesiTheme
 import com.kesicollection.kesihabits.navigation.KhNavHost
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     @OptIn(ExperimentalMaterial3Api::class)

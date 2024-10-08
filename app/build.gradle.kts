@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.kesihabits.android.application)
     alias(libs.plugins.kesihabits.android.application.compose)
+    alias(libs.plugins.kesihabits.hilt)
 }
 
 android {
@@ -32,6 +33,8 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
+
+    ksp(libs.hilt.compiler)
 
     testImplementation(libs.junit)
 
