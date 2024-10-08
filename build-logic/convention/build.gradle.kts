@@ -65,5 +65,9 @@ gradlePlugin {
             id = "kesihabits.android.room"
             implementationClass = "AndroidRoomConventionPlugin"
         }
+        register("jvmLibrary") {
+            id = "kesihabits.jvm.library"
+            implementationClass = "JvmLibraryConventionPlugin"
+        }
     }
 }

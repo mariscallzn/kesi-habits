@@ -67,6 +67,7 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 room = { id = "androidx.room", version.ref = "room" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 
 # Plugins defined by this project
 kesihabits-android-application = { id = "kesihabits.android.application" }
@@ -76,3 +77,4 @@ kesihabits-android-library = { id = "kesihabits.android.library" }
 kesihabits-android-library-compose = { id = "kesihabits.android.library.compose" }
 kesihabits-android-room = { id = "kesihabits.android.room" }
 kesihabits-hilt = { id = "kesihabits.hilt" }
+kesihabits-jvm-library = { id = "kesihabits.jvm.library" }
