@@ -29,6 +29,7 @@ dependencies {
     implementation(projects.feature.weeklyhabits)
 
     implementation(projects.core.designsystem)
+    implementation(projects.database.impl.room)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

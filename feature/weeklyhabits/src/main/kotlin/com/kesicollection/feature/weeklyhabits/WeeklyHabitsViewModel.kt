@@ -2,14 +2,20 @@ package com.kesicollection.feature.weeklyhabits
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kesicollection.core.model.Habit
+import com.kesicollection.data.habit.HabitRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.random.Random
 
 @HiltViewModel
-class WeeklyHabitsViewModel @Inject constructor() : ViewModel() {
+class WeeklyHabitsViewModel @Inject constructor(
+    private val habitRepository: HabitRepository
+) : ViewModel() {
 
     //TODO: Refactor (just for testing)
     val uiState = flow<WeeklyHabitsUiState> {
@@ -19,4 +25,18 @@ class WeeklyHabitsViewModel @Inject constructor() : ViewModel() {
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = WeeklyHabitsUiState.Loading
     )
+
+    fun addHabit() {
+        viewModelScope.launch {
+            habitRepository.addOrUpdateHabits(
+                listOf(
+                    Habit(
+                        "",
+                        "This is a test ${Random.nextInt()}",
+                        "TODO: re-evaluate data class"
+                    )
+                )
+            )
+        }
+    }
 }
