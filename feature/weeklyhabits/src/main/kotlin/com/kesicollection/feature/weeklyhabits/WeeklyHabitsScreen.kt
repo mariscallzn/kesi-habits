@@ -24,7 +24,7 @@ internal fun WeeklyHabitsScreen(
 
     LaunchedEffect(Unit) {
         setFabOnClick {
-            viewModel.addHabit()
+            viewModel.dispatch(ScreenAction.One)
         }
     }
 
@@ -53,7 +53,7 @@ internal fun WeeklyHabitsScreen(
         val computeIndex = page - (Int.MAX_VALUE / 2)
         setPagerIndex(computeIndex)
         Text(
-            text = "computed index $computeIndex",
+            text = "computed index $computeIndex counter ${uiState.counter}",
             modifier = modifier
         )
     }
