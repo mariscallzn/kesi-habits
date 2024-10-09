@@ -9,4 +9,5 @@ android {
 
 dependencies {
     implementation(projects.data.habit)
+    implementation(projects.data.weekspaging)
 }

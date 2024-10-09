@@ -1,5 +1,7 @@
 package com.kesicollection.feature.weeklyhabits
 
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,7 +28,7 @@ internal fun WeeklyHabitsScreen(
         }
     }
 
-    WeeklyHabitsScreen(uiState, setAppBarTitle, setFabOnClick, modifier)
+    WeeklyHabitsScreen(uiState, setAppBarTitle, setFabOnClick, {}, modifier)
 }
 
 /**
@@ -37,9 +39,24 @@ internal fun WeeklyHabitsScreen(
     uiState: WeeklyHabitsUiState,
     setAppBarTitle: (String?) -> Unit,
     setFabOnClick: (() -> Unit) -> Unit,
+    setPagerIndex: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Text("Hello, world $uiState")
+    val pagerState =
+        rememberPagerState(
+            pageCount = { Int.MAX_VALUE },
+            initialPage = (Int.MAX_VALUE / 2)
+        )
+
+
+    HorizontalPager(state = pagerState) { page ->
+        val computeIndex = page - (Int.MAX_VALUE / 2)
+        setPagerIndex(computeIndex)
+        Text(
+            text = "computed index $computeIndex",
+            modifier = modifier
+        )
+    }
 }
 
 

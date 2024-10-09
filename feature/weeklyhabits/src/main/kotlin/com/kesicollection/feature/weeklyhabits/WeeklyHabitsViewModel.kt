@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kesicollection.core.model.Habit
 import com.kesicollection.data.habit.HabitRepository
+import com.kesicollection.data.weekspaging.WeekPagingSource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flow
@@ -14,8 +15,14 @@ import kotlin.random.Random
 
 @HiltViewModel
 class WeeklyHabitsViewModel @Inject constructor(
-    private val habitRepository: HabitRepository
+    private val habitRepository: HabitRepository,
+    private val weekPagingSource: WeekPagingSource
 ) : ViewModel() {
+
+    override fun onCleared() {
+        super.onCleared()
+        weekPagingSource.clear()
+    }
 
     //TODO: Refactor (just for testing)
     val uiState = flow<WeeklyHabitsUiState> {
