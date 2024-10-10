@@ -24,7 +24,7 @@ internal fun WeeklyHabitsScreen(
 
     LaunchedEffect(Unit) {
         setFabOnClick {
-            viewModel.dispatch(ScreenAction.One)
+            viewModel.dispatch(viewModel.test("Wey"))
         }
     }
 

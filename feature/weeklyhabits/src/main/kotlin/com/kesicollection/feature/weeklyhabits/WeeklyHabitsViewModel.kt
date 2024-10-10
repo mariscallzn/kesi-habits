@@ -2,6 +2,8 @@ package com.kesicollection.feature.weeklyhabits
 
 import androidx.lifecycle.viewModelScope
 import com.kesicollection.core.redux.ReduxViewModel
+import com.kesicollection.core.redux.creator.AsyncThunk
+import com.kesicollection.core.redux.creator.createAsyncThunk
 import com.kesicollection.core.redux.creator.createStore
 import com.kesicollection.core.redux.creator.reducer
 import com.kesicollection.core.redux.model.Store
@@ -28,9 +30,11 @@ class WeeklyHabitsViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = store.state
     )
+    lateinit var test: AsyncThunk<String, String>
 
-    override fun configureStore(): Store<WeeklyHabitsUiState> =
-        createStore(
+    override fun configureStore(): Store<WeeklyHabitsUiState> {
+        test = createAsyncThunk("test") { a, b -> "Ahuevo" }
+        return createStore(
             coroutineScope = viewModelScope,
             initialState = initialState,
             reducer = reducer<WeeklyHabitsUiState, ScreenAction> { state, action ->
@@ -39,7 +43,15 @@ class WeeklyHabitsViewModel @Inject constructor(
                     ScreenAction.Two -> state
                 }
             },
+            extraReducers = { builder ->
+                println("Andres Extra reducers")
+                builder.addCase(test.pending) { s, a -> s.copy(counter = s.counter + 15) }
+                builder.addCase(test.fulfilled) { s, a -> s.copy(counter = s.counter - 15) }
+                builder.addCase(test.rejected) { s, a -> s.copy(counter = s.counter + 500) }
+            }
         )
+    }
+
 
 
     override fun onCleared() {
