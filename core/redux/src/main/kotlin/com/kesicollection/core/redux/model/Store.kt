@@ -9,4 +9,5 @@ interface Store<State> {
     val state: State get() = getState()
     val dispatch: Dispatcher
     val subscribe: Flow<State>
+    val builder: ActionReducerMapBuilder<State>
 }

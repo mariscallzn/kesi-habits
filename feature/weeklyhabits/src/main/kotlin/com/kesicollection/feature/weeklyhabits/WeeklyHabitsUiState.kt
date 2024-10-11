@@ -1,5 +1,5 @@
 package com.kesicollection.feature.weeklyhabits
 
-data class WeeklyHabitsUiState(val counter: Int)
+data class WeeklyHabitsUiState(val status: String)
 
-val initialState = WeeklyHabitsUiState(counter = 0)
+val initialState = WeeklyHabitsUiState(status = "initial state")
