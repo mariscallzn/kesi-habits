@@ -1,11 +1,10 @@
 package com.kesicollection.feature.weeklyhabits
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -23,27 +22,13 @@ internal fun WeeklyHabitsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    Column {
-        Text(text = uiState.status)
-        Button({
-            viewModel.dispatch(ScreenAction.One)
-        }) {
-            Text("Sync")
-        }
-        Button({
-            viewModel.dispatch(viewModel.test("These are the thunk args"))
-        }) {
-            Text("Async")
-        }
-        Button({
-            viewModel.dispatch(viewModel.test("Boom"))
-        }) {
-            Text("Async with Exception")
-        }
+    LaunchedEffect(Unit) {
+        viewModel.dispatch(ScreenAction.LoadCalendar())
     }
 
-
-//    WeeklyHabitsScreen(uiState, setAppBarTitle, setFabOnClick, {}, modifier)
+    WeeklyHabitsScreen(uiState, setAppBarTitle, setFabOnClick, { i ->
+        viewModel.dispatch(viewModel.watchPagingIndex(i))
+    }, modifier)
 }
 
 /**
@@ -54,9 +39,10 @@ internal fun WeeklyHabitsScreen(
     uiState: WeeklyHabitsUiState,
     setAppBarTitle: (String?) -> Unit,
     setFabOnClick: (() -> Unit) -> Unit,
-    setPagerIndex: (Int) -> Unit,
+    watchRealIndex: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+
     val pagerState =
         rememberPagerState(
             pageCount = { Int.MAX_VALUE },
@@ -65,12 +51,16 @@ internal fun WeeklyHabitsScreen(
 
 
     HorizontalPager(state = pagerState) { page ->
-        val computeIndex = page - (Int.MAX_VALUE / 2)
-        setPagerIndex(computeIndex)
-        Text(
-            text = "computed index $computeIndex counter $uiState",
-            modifier = modifier
-        )
+        val computeIndex = uiState.offsetIndex + (page - (Int.MAX_VALUE / 2))
+        if (uiState.weeks.isNotEmpty()) {
+            watchRealIndex(page - (Int.MAX_VALUE / 2))
+            Text(
+                text = "Offset ${uiState.offsetIndex} \n" +
+                        "Real Index ${page - (Int.MAX_VALUE / 2)} \n" +
+                        "${uiState.weeks[computeIndex].map { "${it.dayOfWeek} ${it.dayOfMonth}" }}",
+                modifier = modifier
+            )
+        }
     }
 }
 

@@ -12,8 +12,8 @@ import javax.inject.Inject
 interface WeekPagingSource {
     fun getPagingEvents(): Flow<PagingEvent<Week>>
     fun clear()
+    fun startFrom(from: OffsetDateTime): PagingEvent<Week>
     suspend fun watch(index: Int)
-    suspend fun startFrom(from: OffsetDateTime)
 }
 
 internal class WeekPagingSourceImpl @Inject constructor(
@@ -32,6 +32,7 @@ internal class WeekPagingSourceImpl @Inject constructor(
     override fun getPagingEvents(): Flow<PagingEvent<Week>> = pagingEvent
 
     override suspend fun watch(index: Int) {
+        if (sizeTracker == 0) throw IllegalAccessException("watch function cannot be called before startFrom function")
         when (weekPageConfig.evaluatePageState(index, sizeTracker)) {
             PageState.Append -> {
                 finalWeekStart?.let {
@@ -41,7 +42,12 @@ internal class WeekPagingSourceImpl @Inject constructor(
                     ).apply {
                         sizeTracker += weekPageConfig.getPageSize()
                         finalWeekStart = this.last().days.first()
-                        _pagingEvent.emit(PagingEvent.Appended(this))
+                        _pagingEvent.emit(
+                            PagingEvent.Appended(
+                                this,
+                                weekPageConfig.getCalculatedIndex()
+                            )
+                        )
                     }
                 }
             }
@@ -64,17 +70,22 @@ internal class WeekPagingSourceImpl @Inject constructor(
                 }
             }
 
-            PageState.Middle -> Unit /* do nothing */
+            PageState.Middle -> Unit /* no-op */
         }
     }
 
-    override suspend fun startFrom(from: OffsetDateTime) {
-        firstWeekStart = from
-        finalWeekStart = from
-        weekBuilderUseCase(from, weekPageConfig.getPageSize().toLong()).apply {
-            _pagingEvent.emit(PagingEvent.Appended(this))
-            sizeTracker = weekPageConfig.getPageSize()
-        }
+    override fun startFrom(from: OffsetDateTime): PagingEvent<Week> {
+        val startedFrom = weekBuilderUseCase(
+            from.minusWeeks(weekPageConfig.getPageSize().toLong() / 2),
+            weekPageConfig.getPageSize().toLong()
+        )
+        firstWeekStart = startedFrom.first().days.first()
+        finalWeekStart = startedFrom.last().days.first()
+        sizeTracker = weekPageConfig.getPageSize()
+        return PagingEvent.Appended(
+            startedFrom,
+            weekPageConfig.getCalculatedIndex()
+        )
     }
 
     override fun clear() {

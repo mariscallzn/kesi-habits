@@ -11,4 +11,5 @@ dependencies {
     implementation(projects.core.redux)
     implementation(projects.data.habit)
     implementation(projects.data.weekspaging)
+    implementation(projects.domain.weeklyhabits)
 }

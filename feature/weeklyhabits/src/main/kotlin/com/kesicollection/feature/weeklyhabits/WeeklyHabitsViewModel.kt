@@ -1,29 +1,38 @@
 package com.kesicollection.feature.weeklyhabits
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kesicollection.core.model.Week
 import com.kesicollection.core.redux.creator.createAsyncThunk
 import com.kesicollection.core.redux.creator.createStore
 import com.kesicollection.core.redux.creator.reducer
 import com.kesicollection.data.habit.HabitRepository
 import com.kesicollection.data.weekspaging.WeekPagingSource
+import com.kesicollection.data.weekspaging.model.PagingEvent
+import com.kesicollection.domain.weeklyhabits.GetDaysFromWeekUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import java.time.DayOfWeek
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.time.temporal.TemporalAdjusters
 import javax.inject.Inject
-import kotlin.random.Random
 
 sealed class ScreenAction {
-    data object One : ScreenAction()
-    data object Two : ScreenAction()
+    data object Reset : ScreenAction()
+    data class LoadCalendar(val startFrom: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC)) :
+        ScreenAction()
+
+    data class HandlePagingEvent(val event: PagingEvent<Week>) : ScreenAction()
 }
 
 @HiltViewModel
 class WeeklyHabitsViewModel @Inject constructor(
     private val habitRepository: HabitRepository,
-    private val weekPagingSource: WeekPagingSource
+    private val weekPagingSource: WeekPagingSource,
+    private val getDaysFromWeekUseCase: GetDaysFromWeekUseCase,
 ) : ViewModel() {
 
     private val store = createStore(
@@ -31,11 +40,20 @@ class WeeklyHabitsViewModel @Inject constructor(
         initialState = initialState,
         reducer = reducer<WeeklyHabitsUiState, ScreenAction> { state, action ->
             when (action) {
-                ScreenAction.One -> state.copy(status = "ScreenAction.One ${Random.nextInt()}")
-                ScreenAction.Two -> state.copy(status = "Action dispatched within asyncThunk")
+                ScreenAction.Reset -> initialState
+                is ScreenAction.LoadCalendar -> loadCalendar(state, action)
+                is ScreenAction.HandlePagingEvent -> pagingEventHandler(state, action.event)
             }
         }
     )
+
+    init {
+        viewModelScope.launch {
+            weekPagingSource.getPagingEvents().collect { pagingEvent ->
+                dispatch(ScreenAction.HandlePagingEvent(pagingEvent))
+            }
+        }
+    }
 
     val uiState = store.subscribe.stateIn(
         scope = viewModelScope,
@@ -47,22 +65,49 @@ class WeeklyHabitsViewModel @Inject constructor(
         store.dispatch(action)
     }
 
-    val test = createAsyncThunk<String, String>("test") { args, options ->
-        delay(1_500)
-        options.dispatch(ScreenAction.Two)
-        Log.d("Andres", "Let's log the state ${options.getState as WeeklyHabitsUiState} ")
-        delay(1_500)
-        "args: $args Ahuevo"
-    }.apply {
-        store.builder.addCase(pending) { s, a ->
-            s.copy(status = "pending -> action $a")
+    private fun loadCalendar(
+        state: WeeklyHabitsUiState,
+        action: ScreenAction.LoadCalendar
+    ): WeeklyHabitsUiState {
+        //TODO: Here we have to read the start day from settings repo
+        val pagingEvent = weekPagingSource.startFrom(
+            action.startFrom.with(
+                TemporalAdjusters.previousOrSame(
+                    DayOfWeek.MONDAY
+                )
+            )
+        )
+
+        return pagingEventHandler(state, pagingEvent)
+    }
+
+    private fun pagingEventHandler(
+        state: WeeklyHabitsUiState,
+        event: PagingEvent<Week>
+    ): WeeklyHabitsUiState {
+        return when (event) {
+            is PagingEvent.Appended -> {
+                //TODO: Dispatch data fetching from DB
+                state.copy(
+                    offsetIndex = event.initialOffset,
+                    weeks = state.weeks +
+                            event.newData.map { week -> getDaysFromWeekUseCase(week) }
+                )
+            }
+
+            is PagingEvent.Initial -> state
+            is PagingEvent.Prepended -> {
+                //TODO: Dispatch data fetching from DB
+                state.copy(
+                    offsetIndex = event.updatedComputedIndex,
+                    weeks = event.newData.map { week -> getDaysFromWeekUseCase(week) } + state.weeks
+                )
+            }
         }
-        store.builder.addCase(fulfilled) { s, a ->
-            s.copy(status = "fulfilled -> action $a")
-        }
-        store.builder.addCase(rejected) { s, a ->
-            s.copy(status = "rejected -> action $a")
-        }
+    }
+
+    val watchPagingIndex = createAsyncThunk<Unit, Int>("watch-index") { args, _ ->
+        weekPagingSource.watch(args)
     }
 
     override fun onCleared() {

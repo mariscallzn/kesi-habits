@@ -1,5 +1,13 @@
 package com.kesicollection.feature.weeklyhabits
 
-data class WeeklyHabitsUiState(val status: String)
+import com.kesicollection.core.model.Day
 
-val initialState = WeeklyHabitsUiState(status = "initial state")
+data class WeeklyHabitsUiState(
+    val offsetIndex: Int,
+    val weeks: List<List<Day>>
+)
+
+val initialState = WeeklyHabitsUiState(
+    offsetIndex = 0,
+    weeks = emptyList()
+)
