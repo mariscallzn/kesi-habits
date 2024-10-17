@@ -5,6 +5,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
+import com.kesicollection.core.designsystem.state.ScaffoldDefinitionState
 import com.kesicollection.feature.weeklyhabits.WeeklyHabitsScreen
 import kotlinx.serialization.Serializable
 
@@ -15,12 +16,11 @@ fun NavController.navigateToWeeklyHabits(navOptions: NavOptions) =
     navigate(route = WeeklyHabits, navOptions)
 
 fun NavGraphBuilder.weeklyHabitsScreen(
-    setAppBarTitle: (String?) -> Unit,
-    setFabOnClick: (() -> Unit) -> Unit,
+    scaffoldDefinitionState: ScaffoldDefinitionState,
+    addEntryClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     composable<WeeklyHabits> {
-        //TODO Viewmodel one
-        WeeklyHabitsScreen(setAppBarTitle, setFabOnClick, modifier)
+        WeeklyHabitsScreen(scaffoldDefinitionState, addEntryClick, modifier)
     }
 }

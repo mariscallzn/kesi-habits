@@ -42,7 +42,7 @@ class WeeklyHabitsViewModel @Inject constructor(
         initialState = initialState,
         reducer = reducer<WeeklyHabitsUiState, ScreenAction> { state, action ->
             when (action) {
-                ScreenAction.Reset -> initialState
+                is ScreenAction.Reset -> initialState
                 is ScreenAction.LoadCalendar -> loadCalendar(state, action)
                 is ScreenAction.HandlePagingEvent -> pagingEventHandler(state, action.event)
             }
