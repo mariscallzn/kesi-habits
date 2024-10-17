@@ -20,6 +20,7 @@ import java.time.ZoneOffset
 import java.time.temporal.TemporalAdjusters
 import javax.inject.Inject
 
+//region Screen Actions
 sealed class ScreenAction {
     data object Reset : ScreenAction()
     data class LoadCalendar(val startFrom: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC)) :
@@ -27,6 +28,7 @@ sealed class ScreenAction {
 
     data class HandlePagingEvent(val event: PagingEvent<Week>) : ScreenAction()
 }
+//endregion
 
 @HiltViewModel
 class WeeklyHabitsViewModel @Inject constructor(
@@ -47,6 +49,12 @@ class WeeklyHabitsViewModel @Inject constructor(
         }
     )
 
+    val uiState = store.subscribe.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = store.state
+    )
+
     init {
         viewModelScope.launch {
             weekPagingSource.getPagingEvents().collect { pagingEvent ->
@@ -55,16 +63,11 @@ class WeeklyHabitsViewModel @Inject constructor(
         }
     }
 
-    val uiState = store.subscribe.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = store.state
-    )
-
     fun dispatch(action: Any) {
         store.dispatch(action)
     }
 
+    //region Reducer Handlers
     private fun loadCalendar(
         state: WeeklyHabitsUiState,
         action: ScreenAction.LoadCalendar
@@ -105,14 +108,16 @@ class WeeklyHabitsViewModel @Inject constructor(
             }
         }
     }
+    //endregion
 
+    //region Async Thunks
     val watchPagingIndex = createAsyncThunk<Unit, Int>("watch-index") { args, _ ->
         weekPagingSource.watch(args)
     }
+    //endregion
 
     override fun onCleared() {
         super.onCleared()
         weekPagingSource.clear()
     }
-
 }

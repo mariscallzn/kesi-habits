@@ -1,7 +1,7 @@
 package com.kesicollection.core.model
 
-data class Habit(
+data class Influencer(
     val id: String,
     val name: String,
-    val classification: Classification
+    val i18Key: String? = null
 )

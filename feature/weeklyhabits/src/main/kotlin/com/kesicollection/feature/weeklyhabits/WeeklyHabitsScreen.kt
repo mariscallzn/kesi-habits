@@ -49,7 +49,6 @@ internal fun WeeklyHabitsScreen(
             initialPage = (Int.MAX_VALUE / 2)
         )
 
-
     HorizontalPager(state = pagerState) { page ->
         val computeIndex = uiState.offsetIndex + (page - (Int.MAX_VALUE / 2))
         if (uiState.weeks.isNotEmpty()) {

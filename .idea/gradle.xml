@@ -35,6 +35,8 @@
             <option value="$PROJECT_DIR$/database/api" />
             <option value="$PROJECT_DIR$/database/impl" />
             <option value="$PROJECT_DIR$/database/impl/room" />
+            <option value="$PROJECT_DIR$/domain" />
+            <option value="$PROJECT_DIR$/domain/weeklyhabits" />
             <option value="$PROJECT_DIR$/feature" />
             <option value="$PROJECT_DIR$/feature/weeklyhabits" />
           </set>
