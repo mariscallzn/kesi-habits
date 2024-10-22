@@ -19,12 +19,19 @@ class ScaffoldDefinitionState {
     var fabComposable by mutableStateOf<(@Composable () -> Unit)?>(null)
         private set
 
+    var bottomComposable by mutableStateOf<(@Composable () -> Unit)?>(null)
+        private set
+
     fun defineAppBarComposable(content: @Composable () -> Unit) {
         appBarComposable = content
     }
 
     fun defineFabComposable(content: (@Composable () -> Unit)?) {
         fabComposable = content
+    }
+
+    fun defineBottomComposable(content: (@Composable () -> Unit)?) {
+        bottomComposable = content
     }
 
 }

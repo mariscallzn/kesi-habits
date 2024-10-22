@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add_entry_screen">New Entry</string>
+    <string name="cd_back">back</string>
+    <string name="cd_add">add</string>
+    <string name="select_habit">Add habit</string>
+</resources>
