@@ -25,6 +25,7 @@ import com.kesicollection.core.designsystem.state.ScaffoldDefinitionState
 fun HabitPickerScreen(
     scaffoldDefinitionState: ScaffoldDefinitionState,
     onBackPress: () -> Unit,
+    onCreateHabitClick: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HabitPickerViewModel = hiltViewModel()
 ) {
@@ -32,6 +33,7 @@ fun HabitPickerScreen(
     HabitPickerScreen(
         scaffoldDefinitionState,
         onBackPress,
+        onCreateHabitClick,
         uiState,
         modifier
     )
@@ -42,12 +44,14 @@ fun HabitPickerScreen(
 fun HabitPickerScreen(
     scaffoldDefinitionState: ScaffoldDefinitionState,
     onBackPress: () -> Unit,
+    onCreateHabitClick: () -> Unit,
     uiState: HabitPickerUiState,
     modifier: Modifier = Modifier
 ) {
     LaunchedEffect(Unit) {
         scaffoldDefinitionState.defineAppBarComposable {
-            Text("TODO: Search bar TODO TODO TODO TODO Camera?",
+            Text(
+                "TODO: Search bar TODO TODO TODO TODO Camera?",
                 modifier = Modifier
                     .windowInsetsPadding(TopAppBarDefaults.windowInsets)
                     .padding(16.dp),
@@ -55,7 +59,7 @@ fun HabitPickerScreen(
             )
         }
         scaffoldDefinitionState.defineFabComposable {
-            FloatingActionButton(onClick = {/* TODO: bubble up to navigate to create habit */ }) {
+            FloatingActionButton(onClick = onCreateHabitClick) {
                 Icon(KesiIcons.Add, contentDescription = "Add")
             }
         }

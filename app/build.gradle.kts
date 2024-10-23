@@ -29,6 +29,7 @@ dependencies {
     implementation(projects.feature.weeklyhabits)
     implementation(projects.feature.addentry)
     implementation(projects.feature.habitpicker)
+    implementation(projects.feature.createhabit)
 
     implementation(projects.core.designsystem)
     implementation(projects.database.impl.room)
