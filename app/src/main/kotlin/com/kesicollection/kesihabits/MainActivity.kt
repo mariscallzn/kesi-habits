@@ -33,7 +33,9 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     KhNavHost(
                         scaffoldDefinitionState,
-                        modifier = Modifier.padding(innerPadding)
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
                     )
                 }
             }

@@ -4,6 +4,8 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.kesicollection.core.model.Arousal
+import com.kesicollection.core.model.Emotion
+import com.kesicollection.core.model.Status
 import com.kesicollection.core.model.Valence
 
 /**
@@ -28,6 +30,11 @@ data class EmotionEntity(
     val name: String,
     val valence: Valence,
     val arousal: Arousal,
+    val status: Status,
     @ColumnInfo(name = "i_18_key")
     val i18Key: String?
+)
+
+fun Emotion.toEntity(): EmotionEntity = EmotionEntity(
+    id, name, valence, arousal, status, i18Key
 )

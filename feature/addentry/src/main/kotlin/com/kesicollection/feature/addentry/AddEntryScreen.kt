@@ -2,16 +2,15 @@ package com.kesicollection.feature.addentry
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,7 +33,6 @@ import com.kesicollection.core.designsystem.preview.DarkLightPreviews
 import com.kesicollection.core.designsystem.state.ScaffoldDefinitionState
 import com.kesicollection.core.designsystem.theme.KesiTheme
 
-
 @Composable
 fun AddEntryScreen(
     scaffoldDefinitionState: ScaffoldDefinitionState,
@@ -45,7 +43,6 @@ fun AddEntryScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     AddEntryScreen(scaffoldDefinitionState, onBackPress, uiState, modifier)
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,21 +68,6 @@ fun AddEntryScreen(
                 }
             })
         }
-        scaffoldDefinitionState.defineBottomComposable {
-            Button(
-                {},
-                modifier = modifier.fillMaxWidth().height(56.dp).padding(horizontal = 16.dp),
-                shape = RoundedCornerShape(MaterialTheme.shapes.medium.topStart),
-                colors = ButtonColors(
-                    MaterialTheme.colorScheme.tertiaryContainer,
-                    MaterialTheme.colorScheme.onTertiaryContainer,
-                    MaterialTheme.colorScheme.surfaceVariant,
-                    MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            ) {
-                Text("ADD", style = MaterialTheme.typography.bodyLarge)
-            }
-        }
     }
 
     Column(
@@ -104,6 +86,16 @@ fun AddEntryScreen(
             ) {
             CurrentEmotionsSection(modifier = Modifier.weight(1f))
             DesireEmotionsSection(modifier = Modifier.weight(1f))
+        }
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            Button({}, Modifier.fillMaxWidth()) {
+                Text("Add", Modifier.padding(8.dp), style = MaterialTheme.typography.titleLarge)
+            }
         }
     }
 }

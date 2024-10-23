@@ -20,6 +20,7 @@ import com.kesicollection.database.impl.room.model.InfluencerEntity
 import com.kesicollection.database.impl.room.util.ArousalConverter
 import com.kesicollection.database.impl.room.util.ClassificationConverter
 import com.kesicollection.database.impl.room.util.OffsetDateTimeConverter
+import com.kesicollection.database.impl.room.util.StatusConverter
 import com.kesicollection.database.impl.room.util.ValenceConverter
 
 /**
@@ -65,7 +66,8 @@ import com.kesicollection.database.impl.room.util.ValenceConverter
     OffsetDateTimeConverter::class,
     ClassificationConverter::class,
     ValenceConverter::class,
-    ArousalConverter::class
+    ArousalConverter::class,
+    StatusConverter::class
 )
 internal abstract class KhDatabase : RoomDatabase() {
     abstract fun habitDao(): HabitDao

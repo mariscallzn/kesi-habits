@@ -5,5 +5,6 @@ data class Emotion(
     val name: String,
     val valence: Valence,
     val arousal: Arousal,
+    val status: Status,
     val i18Key: String?
 )
