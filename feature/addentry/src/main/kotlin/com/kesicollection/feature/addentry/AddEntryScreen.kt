@@ -37,12 +37,19 @@ import com.kesicollection.core.designsystem.theme.KesiTheme
 fun AddEntryScreen(
     scaffoldDefinitionState: ScaffoldDefinitionState,
     onBackPress: () -> Unit,
+    onAddHabitClick: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: AddEntryViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    AddEntryScreen(scaffoldDefinitionState, onBackPress, uiState, modifier)
+    AddEntryScreen(
+        scaffoldDefinitionState,
+        onBackPress,
+        onAddHabitClick,
+        uiState,
+        modifier
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -50,6 +57,7 @@ fun AddEntryScreen(
 fun AddEntryScreen(
     scaffoldDefinitionState: ScaffoldDefinitionState,
     onBackPress: () -> Unit,
+    onAddHabitClick: () -> Unit,
     uiState: AddEntryUiState,
     modifier: Modifier = Modifier
 ) {
@@ -76,8 +84,8 @@ fun AddEntryScreen(
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(32.dp)
     ) {
-        HabitSection()
-        TriggeredSection()
+        HabitSection(onAddHabitClick)
+        TriggeredSection(onAddHabitClick)
         Row(
             horizontalArrangement = Arrangement.spacedBy(24.dp),
             modifier = Modifier
@@ -101,26 +109,26 @@ fun AddEntryScreen(
 }
 
 @Composable
-fun HabitSection(modifier: Modifier = Modifier) {
+fun HabitSection(onAddHabitClick: () -> Unit, modifier: Modifier = Modifier) {
     Column(modifier = modifier) {
         Text(
             text = stringResource(R.string.select_habit),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(bottom = 16.dp)
         )
-        DashedButton("", modifier = Modifier.fillMaxWidth()) { }
+        DashedButton("", modifier = Modifier.fillMaxWidth(), onAddHabitClick)
     }
 }
 
 @Composable
-fun TriggeredSection(modifier: Modifier = Modifier) {
+fun TriggeredSection(onAddHabitClick: () -> Unit,modifier: Modifier = Modifier) {
     Column(modifier = modifier) {
         Text(
             text = "What habit triggered you?",
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(bottom = 16.dp)
         )
-        DashedButton("", modifier = Modifier.fillMaxWidth()) { }
+        DashedButton("", modifier = Modifier.fillMaxWidth(), onAddHabitClick)
     }
 }
 
@@ -191,7 +199,7 @@ fun DashedButton(
 private fun HabitSectionPreview() {
     KesiTheme {
         AddEntryScreen(
-            ScaffoldDefinitionState(), {},
+            ScaffoldDefinitionState(), {}, {},
             AddEntryUiState(true)
         )
     }

@@ -1,4 +1,4 @@
-package com.kesicollection.feature.addentry.navigation
+package com.kesicollection.feature.habitpicker.navigation
 
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
@@ -6,22 +6,21 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
 import com.kesicollection.core.designsystem.state.ScaffoldDefinitionState
-import com.kesicollection.feature.addentry.AddEntryScreen
+import com.kesicollection.feature.habitpicker.HabitPickerScreen
 import kotlinx.serialization.Serializable
 
 @Serializable
-data object AddEntry
+data object HabitPicker
 
-fun NavController.navigateToAddEntry(navOptions: NavOptions? = null) =
-    navigate(route = AddEntry, navOptions)
+fun NavController.navigateToHabitPicker(navOptions: NavOptions? = null) =
+    navigate(route = HabitPicker, navOptions)
 
-fun NavGraphBuilder.addEntryScreen(
+fun NavGraphBuilder.habitPickerScreen(
     scaffoldDefinitionState: ScaffoldDefinitionState,
     onBackPressed: () -> Unit,
-    onAddHabitClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    composable<AddEntry> {
-        AddEntryScreen(scaffoldDefinitionState, onBackPressed, onAddHabitClick, modifier)
+    composable<HabitPicker> {
+        HabitPickerScreen(scaffoldDefinitionState, onBackPressed, modifier)
     }
 }

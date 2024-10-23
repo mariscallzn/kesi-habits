@@ -28,6 +28,7 @@ android {
 dependencies {
     implementation(projects.feature.weeklyhabits)
     implementation(projects.feature.addentry)
+    implementation(projects.feature.habitpicker)
 
     implementation(projects.core.designsystem)
     implementation(projects.database.impl.room)
