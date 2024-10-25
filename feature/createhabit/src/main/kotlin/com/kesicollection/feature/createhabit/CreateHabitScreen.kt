@@ -32,13 +32,15 @@ import com.kesicollection.core.designsystem.state.ScaffoldDefinitionState
 import com.kesicollection.core.model.Classification
 import com.kesicollection.core.model.HabitType
 import com.kesicollection.feature.createhabit.navigation.CreateHabit
+import com.kesicollection.feature.createhabit.navigation.EntryDraftId
+import com.kesicollection.feature.createhabit.navigation.HabitId
 
 @Composable
 fun CreateHabitScreen(
     scaffoldDefinitionState: ScaffoldDefinitionState,
     onBackPressed: () -> Unit,
     createHabit: CreateHabit,
-    onHabitCreated: (String, HabitType) -> Unit,
+    onHabitCreated: (EntryDraftId, HabitId, HabitType) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CreateHabitViewModel = hiltViewModel()
 ) {
@@ -71,8 +73,8 @@ fun CreateHabitScreen(
             //TODO: Handle automatic navigation as google recommends from the UIState in combination of LaunchEffect
 //            viewModel.dispatch(viewModel.createHabit)
             onHabitCreated(
-                "${viewModel.habitName}-ID",
-                createHabit.type
+                createHabit.entryDraftId, "${viewModel.habitName}-ID",
+                createHabit.type,
             )
         },
         modifier = modifier

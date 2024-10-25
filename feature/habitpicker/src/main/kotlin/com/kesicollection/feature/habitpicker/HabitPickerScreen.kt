@@ -12,6 +12,7 @@ import com.kesicollection.core.designsystem.component.CommonTopAppBar
 import com.kesicollection.core.designsystem.icon.KesiIcons
 import com.kesicollection.core.designsystem.state.ScaffoldDefinitionState
 import com.kesicollection.core.model.HabitType
+import com.kesicollection.feature.habitpicker.navigation.EntryDraftId
 import com.kesicollection.feature.habitpicker.navigation.HabitPicker
 
 //TODO: Review
@@ -22,7 +23,7 @@ fun HabitPickerScreen(
     scaffoldDefinitionState: ScaffoldDefinitionState,
     onBackPress: () -> Unit,
     habitPicker: HabitPicker,
-    onCreateHabitClick: (HabitType) -> Unit,
+    onCreateHabitClick: (EntryDraftId, HabitType) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HabitPickerViewModel = hiltViewModel()
 ) {
@@ -42,17 +43,17 @@ fun HabitPickerScreen(
     scaffoldDefinitionState: ScaffoldDefinitionState,
     onBackPress: () -> Unit,
     habitPicker: HabitPicker,
-    onCreateHabitClick: (HabitType) -> Unit,
+    onCreateHabitClick: (EntryDraftId, HabitType) -> Unit,
     uiState: HabitPickerUiState,
     modifier: Modifier = Modifier
 ) {
     LaunchedEffect(Unit) {
         scaffoldDefinitionState.defineAppBarComposable {
-          CommonTopAppBar(onBackPress, "Habit picker")
+            CommonTopAppBar(onBackPress, "Habit picker")
         }
         scaffoldDefinitionState.defineFabComposable {
             FloatingActionButton(onClick = {
-                onCreateHabitClick(habitPicker.habitType)
+                onCreateHabitClick(habitPicker.entryDraftId, habitPicker.habitType)
             }) {
                 Icon(KesiIcons.Add, contentDescription = "Add")
             }

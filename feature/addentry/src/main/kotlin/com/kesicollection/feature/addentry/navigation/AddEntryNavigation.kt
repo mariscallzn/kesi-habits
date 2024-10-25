@@ -12,7 +12,13 @@ import com.kesicollection.feature.addentry.AddEntryScreen
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class AddEntry(val habitId: String? = null, val type: HabitType? = null)
+data class AddEntry(
+    val draftId: String? = null,
+    val habitId: String? = null,
+    val type: HabitType? = null
+)
+
+internal typealias EntryDraftId = String
 
 fun NavController.navigateToAddEntry(addEntry: AddEntry, navOptions: NavOptions? = null) =
     navigate(route = addEntry, navOptions)
@@ -20,7 +26,7 @@ fun NavController.navigateToAddEntry(addEntry: AddEntry, navOptions: NavOptions?
 fun NavGraphBuilder.addEntryScreen(
     scaffoldDefinitionState: ScaffoldDefinitionState,
     onBackPressed: () -> Unit,
-    onAddHabitClick: (HabitType) -> Unit,
+    onAddHabitClick: (EntryDraftId, HabitType) -> Unit,
     modifier: Modifier = Modifier
 ) {
     composable<AddEntry> { backStackEntry ->

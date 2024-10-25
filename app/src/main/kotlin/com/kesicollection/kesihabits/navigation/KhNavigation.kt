@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navOptions
 import com.kesicollection.core.designsystem.state.ScaffoldDefinitionState
 import com.kesicollection.feature.addentry.navigation.AddEntry
 import com.kesicollection.feature.addentry.navigation.addEntryScreen
@@ -34,21 +35,30 @@ fun KhNavHost(
         addEntryScreen(
             scaffoldDefinitionState = scaffoldDefinitionState,
             onBackPressed = navController::popBackStack,
-            onAddHabitClick = { type -> navController.navigateToHabitPicker(HabitPicker(type)) },
+            onAddHabitClick = { entryDraftId, type ->
+                navController.navigateToHabitPicker(
+                    HabitPicker(type, entryDraftId)
+                )
+            },
             modifier = modifier
         )
         habitPickerScreen(
             scaffoldDefinitionState = scaffoldDefinitionState,
             onBackPressed = navController::popBackStack,
-            onCreateHabitClick = { type -> navController.navigateToCreateHabit(CreateHabit(type)) },
+            onCreateHabitClick = { entryDraftId, type ->
+                navController.navigateToCreateHabit(
+                    CreateHabit(type, entryDraftId)
+                )
+            },
             modifier = modifier,
         )
         createHabitScreen(
             scaffoldDefinitionState = scaffoldDefinitionState,
             onBackPressed = navController::popBackStack,
-            onHabitCreated = { habitId, type ->
-                navController.popBackStack<AddEntry>(inclusive = true, false)
-                navController.navigateToAddEntry(AddEntry(habitId, type))
+            onHabitCreated = { entryDraftId, habitId, type ->
+                navController.navigateToAddEntry(AddEntry(entryDraftId, habitId, type), navOptions {
+                    popUpTo(AddEntry()) { inclusive = true }
+                })
             },
             modifier = modifier,
         )

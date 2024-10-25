@@ -11,8 +11,11 @@ import com.kesicollection.core.model.HabitType
 import com.kesicollection.feature.createhabit.CreateHabitScreen
 import kotlinx.serialization.Serializable
 
+internal typealias EntryDraftId = String
+internal typealias HabitId = String
+
 @Serializable
-data class CreateHabit(val type: HabitType)
+data class CreateHabit(val type: HabitType, val entryDraftId: EntryDraftId)
 
 fun NavController.navigateToCreateHabit(createHabit: CreateHabit, navOptions: NavOptions? = null) =
     navigate(route = createHabit, navOptions)
@@ -20,7 +23,7 @@ fun NavController.navigateToCreateHabit(createHabit: CreateHabit, navOptions: Na
 fun NavGraphBuilder.createHabitScreen(
     scaffoldDefinitionState: ScaffoldDefinitionState,
     onBackPressed: () -> Unit,
-    onHabitCreated: (String, HabitType) -> Unit,
+    onHabitCreated: (EntryDraftId, HabitId, HabitType) -> Unit,
     modifier: Modifier = Modifier
 ) {
     composable<CreateHabit> { backStackEntry ->
