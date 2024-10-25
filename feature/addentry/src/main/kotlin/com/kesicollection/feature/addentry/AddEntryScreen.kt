@@ -10,13 +10,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -27,6 +23,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kesicollection.core.designsystem.component.CommonTopAppBar
+import com.kesicollection.core.designsystem.component.CreationButton
 import com.kesicollection.core.designsystem.component.DashedBox
 import com.kesicollection.core.designsystem.icon.KesiIcons
 import com.kesicollection.core.designsystem.preview.DarkLightPreviews
@@ -43,40 +41,27 @@ fun AddEntryScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    LaunchedEffect(Unit) {
+        scaffoldDefinitionState.defineFabComposable(null)
+        scaffoldDefinitionState.defineAppBarComposable {
+            CommonTopAppBar(onBackPress, stringResource(R.string.add_entry_screen))
+        }
+    }
+
     AddEntryScreen(
-        scaffoldDefinitionState,
-        onBackPress,
         onAddHabitClick,
         uiState,
         modifier
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEntryScreen(
-    scaffoldDefinitionState: ScaffoldDefinitionState,
-    onBackPress: () -> Unit,
     onAddHabitClick: () -> Unit,
     uiState: AddEntryUiState,
     modifier: Modifier = Modifier
 ) {
 
-    LaunchedEffect(Unit) {
-        scaffoldDefinitionState.defineFabComposable(null)
-        scaffoldDefinitionState.defineAppBarComposable {
-            TopAppBar(title = {
-                Text(
-                    text = stringResource(R.string.add_entry_screen),
-                    style = MaterialTheme.typography.headlineMedium
-                )
-            }, navigationIcon = {
-                IconButton(onBackPress) {
-                    Icon(KesiIcons.ArrowBack, stringResource(R.string.cd_back))
-                }
-            })
-        }
-    }
 
     Column(
         modifier = modifier
@@ -101,9 +86,7 @@ fun AddEntryScreen(
                 .fillMaxWidth(),
             contentAlignment = Alignment.BottomCenter
         ) {
-            Button({}, Modifier.fillMaxWidth()) {
-                Text("Add", Modifier.padding(8.dp), style = MaterialTheme.typography.titleLarge)
-            }
+            CreationButton({}, Modifier.fillMaxWidth(), "add")
         }
     }
 }
@@ -121,7 +104,7 @@ fun HabitSection(onAddHabitClick: () -> Unit, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun TriggeredSection(onAddHabitClick: () -> Unit,modifier: Modifier = Modifier) {
+fun TriggeredSection(onAddHabitClick: () -> Unit, modifier: Modifier = Modifier) {
     Column(modifier = modifier) {
         Text(
             text = "What habit triggered you?",
@@ -199,8 +182,7 @@ fun DashedButton(
 private fun HabitSectionPreview() {
     KesiTheme {
         AddEntryScreen(
-            ScaffoldDefinitionState(), {}, {},
-            AddEntryUiState(true)
+            {}, AddEntryUiState(true)
         )
     }
 }

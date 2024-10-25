@@ -23,7 +23,8 @@ fun NavGraphBuilder.createHabitScreen(
     composable<CreateHabit> {
         CreateHabitScreen(
             scaffoldDefinitionState,
-            onBackPressed
+            onBackPressed,
+            modifier
         )
     }
 }

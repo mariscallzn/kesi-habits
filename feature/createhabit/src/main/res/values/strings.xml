@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="new_habit">New habit</string>
+    <string name="habit_classification_title">How do you define it?</string>
+    <string name="positive">positive</string>
+    <string name="neutral">neutral</string>
+    <string name="negative">negative</string>
+</resources>

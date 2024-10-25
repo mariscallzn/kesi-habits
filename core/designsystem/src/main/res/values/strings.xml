@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add">add</string>
+    <string name="create">create</string>
+    <string name="cancel">@android:string/cancel</string>
+
+    <string name="cd_go_back_arrow">Go back arrow</string>
+
+</resources>
