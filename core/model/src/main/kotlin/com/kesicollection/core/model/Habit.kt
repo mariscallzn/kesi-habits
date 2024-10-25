@@ -6,3 +6,7 @@ data class Habit(
     val classification: Classification,
     val status: Status,
 )
+
+enum class HabitType {
+    CORE, TRIGGER
+}

@@ -6,6 +6,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kesicollection.core.model.Classification
+import com.kesicollection.core.model.Habit
+import com.kesicollection.core.model.Status
+import com.kesicollection.core.redux.creator.createAsyncThunk
 import com.kesicollection.core.redux.creator.createStore
 import com.kesicollection.core.redux.creator.reducer
 import com.kesicollection.data.habit.HabitRepository
@@ -77,5 +80,21 @@ class CreateHabitViewModel @Inject constructor(
     }
 
     //region Async Thunks
+    val createHabit = createAsyncThunk<Unit, Unit>("create-habit") { _, _ ->
+        habitRepository.addOrUpdateHabits(
+            listOf(
+                Habit(
+                    "",
+                    habitName,
+                    classification ?: Classification.NEUTRAL,
+                    Status.ACTIVE
+                )
+            )
+        )
+    }.apply {
+        store.builder.addCase(pending) { state, action -> state.copy(isCreateButtonEnabled = false) }
+        store.builder.addCase(fulfilled) { state, action -> state }
+        store.builder.addCase(rejected) { state, action -> state }
+    }
     //endregion
 }

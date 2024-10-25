@@ -5,23 +5,26 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.kesicollection.core.designsystem.state.ScaffoldDefinitionState
+import com.kesicollection.core.model.HabitType
 import com.kesicollection.feature.addentry.AddEntryScreen
 import kotlinx.serialization.Serializable
 
 @Serializable
-data object AddEntry
+data class AddEntry(val habitId: String? = null, val type: HabitType? = null)
 
-fun NavController.navigateToAddEntry(navOptions: NavOptions? = null) =
-    navigate(route = AddEntry, navOptions)
+fun NavController.navigateToAddEntry(addEntry: AddEntry, navOptions: NavOptions? = null) =
+    navigate(route = addEntry, navOptions)
 
 fun NavGraphBuilder.addEntryScreen(
     scaffoldDefinitionState: ScaffoldDefinitionState,
     onBackPressed: () -> Unit,
-    onAddHabitClick: () -> Unit,
+    onAddHabitClick: (HabitType) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    composable<AddEntry> {
-        AddEntryScreen(scaffoldDefinitionState, onBackPressed, onAddHabitClick, modifier)
+    composable<AddEntry> { backStackEntry ->
+        val addEntry = backStackEntry.toRoute<AddEntry>()
+        AddEntryScreen(scaffoldDefinitionState, onBackPressed, addEntry, onAddHabitClick, modifier)
     }
 }

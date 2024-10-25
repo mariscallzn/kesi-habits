@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.kesihabits.android.application)
     alias(libs.plugins.kesihabits.android.application.compose)
     alias(libs.plugins.kesihabits.hilt)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -37,6 +38,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.kotlinx.serialization.json)
 
     ksp(libs.hilt.compiler)
 

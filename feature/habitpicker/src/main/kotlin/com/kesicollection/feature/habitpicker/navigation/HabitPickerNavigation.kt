@@ -5,23 +5,32 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.kesicollection.core.designsystem.state.ScaffoldDefinitionState
+import com.kesicollection.core.model.HabitType
 import com.kesicollection.feature.habitpicker.HabitPickerScreen
 import kotlinx.serialization.Serializable
 
 @Serializable
-data object HabitPicker
+data class HabitPicker(val habitType: HabitType)
 
-fun NavController.navigateToHabitPicker(navOptions: NavOptions? = null) =
-    navigate(route = HabitPicker, navOptions)
+fun NavController.navigateToHabitPicker(habitPicker: HabitPicker, navOptions: NavOptions? = null) =
+    navigate(route = habitPicker, navOptions)
 
 fun NavGraphBuilder.habitPickerScreen(
     scaffoldDefinitionState: ScaffoldDefinitionState,
     onBackPressed: () -> Unit,
-    onCreateHabitClick: () -> Unit,
+    onCreateHabitClick: (HabitType) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    composable<HabitPicker> {
-        HabitPickerScreen(scaffoldDefinitionState, onBackPressed, onCreateHabitClick, modifier)
+    composable<HabitPicker> { backStackEntry ->
+        val habitPicker = backStackEntry.toRoute<HabitPicker>()
+        HabitPickerScreen(
+            scaffoldDefinitionState,
+            onBackPressed,
+            habitPicker,
+            onCreateHabitClick,
+            modifier
+        )
     }
 }

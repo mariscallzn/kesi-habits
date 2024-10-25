@@ -30,11 +30,15 @@ import com.kesicollection.core.designsystem.component.CommonTopAppBar
 import com.kesicollection.core.designsystem.component.CreationButton
 import com.kesicollection.core.designsystem.state.ScaffoldDefinitionState
 import com.kesicollection.core.model.Classification
+import com.kesicollection.core.model.HabitType
+import com.kesicollection.feature.createhabit.navigation.CreateHabit
 
 @Composable
 fun CreateHabitScreen(
     scaffoldDefinitionState: ScaffoldDefinitionState,
     onBackPressed: () -> Unit,
+    createHabit: CreateHabit,
+    onHabitCreated: (String, HabitType) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CreateHabitViewModel = hiltViewModel()
 ) {
@@ -45,7 +49,16 @@ fun CreateHabitScreen(
         scaffoldDefinitionState.defineAppBarComposable {
             CommonTopAppBar(onBackPressed)
         }
+
     }
+
+//TODO:
+//    LaunchedEffect(uiState.createdHabitId) {
+//        onHabitCreated(
+//            uiState.createdHabitId,
+//            createHabit.type
+//        )
+//    }
 
     CreateHabitScreen(
         uiState = uiState,
@@ -54,7 +67,14 @@ fun CreateHabitScreen(
         habitName = viewModel.habitName,
         habitNameChangeValue = { value -> viewModel.updateHabitName(value) },
         onCancel = { viewModel.dispatch(ScreenActions.ClearText) },
-        onCreate = {},
+        onCreate = {
+            //TODO: Handle automatic navigation as google recommends from the UIState in combination of LaunchEffect
+//            viewModel.dispatch(viewModel.createHabit)
+            onHabitCreated(
+                "${viewModel.habitName}-ID",
+                createHabit.type
+            )
+        },
         modifier = modifier
     )
 }

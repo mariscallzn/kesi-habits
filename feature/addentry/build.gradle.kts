@@ -9,4 +9,5 @@ android {
 
 dependencies {
     implementation(projects.core.redux)
+    implementation(projects.data.habit)
 }
