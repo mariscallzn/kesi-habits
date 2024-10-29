@@ -92,8 +92,6 @@ internal class StoreManagerImpl<State>(
                     thunkAction.arg,
                     AsyncThunkOptions(::dispatch, getState() as Any)
                 )
-                //TODO: Delete this, testing exceptions only
-                if (thunkAction.arg == "Boom") throw IllegalStateException("Boom happened")
                 updateStateAndEmit(thunkAction.asyncThunk.fulfilled.type, Result.success(result))
             } catch (e: Exception /* This will catch CancellationException which for now it's ok */) {
                 updateStateAndEmit(thunkAction.asyncThunk.rejected.type, Result.failure(e))

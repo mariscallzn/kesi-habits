@@ -1,7 +1,9 @@
 package com.kesicollection.feature.addentry
 
 import android.util.Log
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,7 +14,10 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,13 +33,15 @@ import com.kesicollection.core.designsystem.component.CommonTopAppBar
 import com.kesicollection.core.designsystem.component.CreationButton
 import com.kesicollection.core.designsystem.component.DashedBox
 import com.kesicollection.core.designsystem.icon.KesiIcons
-import com.kesicollection.core.designsystem.preview.DarkLightPreviews
 import com.kesicollection.core.designsystem.state.ScaffoldDefinitionState
-import com.kesicollection.core.designsystem.theme.KesiTheme
 import com.kesicollection.core.designsystem.utils.TAG
+import com.kesicollection.core.model.Classification
+import com.kesicollection.core.model.Habit
 import com.kesicollection.core.model.HabitType
+import com.kesicollection.feature.addentry.model.UpdateHabitThunkArgs
 import com.kesicollection.feature.addentry.navigation.AddEntry
 import com.kesicollection.feature.addentry.navigation.EntryDraftId
+import com.kesicollection.feature.addentry.utils.ClassificationBoxColor
 
 @Composable
 fun AddEntryScreen(
@@ -54,9 +61,41 @@ fun AddEntryScreen(
         }
     }
 
+    LaunchedEffect(addEntry) {
+        when {
+            addEntry.draftId.isNullOrBlank() && addEntry.habitId.isNullOrBlank() -> viewModel.dispatch(
+                viewModel.createDraft(Unit)
+            )
+
+            addEntry.draftId?.isNotBlank() == true
+                    && addEntry.habitId?.isNotBlank() == true
+                    && addEntry.type != null -> viewModel.dispatch(
+                viewModel.dispatch(
+                    viewModel.updateHabit(
+                        UpdateHabitThunkArgs(
+                            addEntry.draftId,
+                            addEntry.habitId,
+                            addEntry.type
+                        )
+                    )
+                )
+            )
+        }
+    }
+
     AddEntryScreen(
-        addEntry,
         onAddHabitClick,
+        onClearClick = { draftId, habitType ->
+            viewModel.dispatch(
+                viewModel.updateHabit(
+                    UpdateHabitThunkArgs(
+                        draftId,
+                        null,
+                        habitType
+                    )
+                )
+            )
+        },
         uiState,
         modifier
     )
@@ -64,29 +103,62 @@ fun AddEntryScreen(
 
 @Composable
 fun AddEntryScreen(
-    addEntry: AddEntry,
     onAddHabitClick: (EntryDraftId, HabitType) -> Unit,
+    onClearClick: (EntryDraftId, HabitType) -> Unit,
     uiState: AddEntryUiState,
     modifier: Modifier = Modifier
 ) {
-
-    LaunchedEffect(addEntry) {
-        Log.d(TAG, "AddEntryScreen: $addEntry")
-    }
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(32.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        HabitSection("TODO: take it From State", onAddHabitClick)
-        TriggeredSection("TODO: take it From State", onAddHabitClick)
+        Text(
+            text = stringResource(R.string.select_habit),
+            style = MaterialTheme.typography.titleMedium,
+        )
+        if (uiState.coreHabit?.name?.isNotBlank() == true) HabitCard(
+            uiState.draftId,
+            onAddHabitClick,
+            onClearClick,
+            uiState.coreHabit,
+            HabitType.CORE
+        ) else DashedButton(
+            "",
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            onAddHabitClick(
+                uiState.draftId,
+                HabitType.CORE
+            )
+        }
+
+        Text(
+            text = "What habit triggered you?",
+            style = MaterialTheme.typography.titleMedium,
+        )
+        if (uiState.triggerHabit?.name?.isNotBlank() == true) HabitCard(
+            uiState.draftId,
+            onAddHabitClick,
+            onClearClick,
+            uiState.triggerHabit,
+            HabitType.TRIGGER
+        ) else DashedButton(
+            "",
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            onAddHabitClick(
+                uiState.draftId,
+                HabitType.TRIGGER
+            )
+        }
+
         Row(
             horizontalArrangement = Arrangement.spacedBy(24.dp),
             modifier = Modifier
                 .fillMaxWidth(),
-
             ) {
             CurrentEmotionsSection(modifier = Modifier.weight(1f))
             DesireEmotionsSection(modifier = Modifier.weight(1f))
@@ -97,49 +169,92 @@ fun AddEntryScreen(
                 .fillMaxWidth(),
             contentAlignment = Alignment.BottomCenter
         ) {
-            CreationButton({}, Modifier.fillMaxWidth(), "add")
-        }
-    }
-}
-
-@Composable
-fun HabitSection(
-    draftEntryId: EntryDraftId,
-    onAddHabitClick: (EntryDraftId, HabitType) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(modifier = modifier) {
-        Text(
-            text = stringResource(R.string.select_habit),
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-        DashedButton("", modifier = Modifier.fillMaxWidth()) {
-            onAddHabitClick(
-                draftEntryId,
-                HabitType.CORE
+            CreationButton(
+                enabled = uiState.isSaveEnabled,
+                onClick = {},
+                modifier = Modifier.fillMaxWidth(),
+                text = "add"
             )
         }
     }
 }
 
 @Composable
-fun TriggeredSection(
+fun HabitCard(
     draftEntryId: EntryDraftId,
     onAddHabitClick: (EntryDraftId, HabitType) -> Unit,
+    onClearClick: (EntryDraftId, HabitType) -> Unit,
+    habit: Habit,
+    habitType: HabitType,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier) {
-        Text(
-            text = "What habit triggered you?",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-        DashedButton("", modifier = Modifier.fillMaxWidth()) {
-            onAddHabitClick(
-                draftEntryId,
-                HabitType.TRIGGER
+    val color: ClassificationBoxColor =
+        when (habit.classification) {
+            Classification.POSITIVE -> ClassificationBoxColor(
+                MaterialTheme.colorScheme.tertiary,
+                MaterialTheme.colorScheme.tertiaryContainer,
+                MaterialTheme.colorScheme.onTertiaryContainer,
+                MaterialTheme.colorScheme.onTertiary,
             )
+
+            Classification.NEUTRAL -> ClassificationBoxColor(
+                MaterialTheme.colorScheme.secondary,
+                MaterialTheme.colorScheme.secondaryContainer,
+                MaterialTheme.colorScheme.onSecondaryContainer,
+                MaterialTheme.colorScheme.onSecondary,
+            )
+
+            else -> ClassificationBoxColor(
+                MaterialTheme.colorScheme.error,
+                MaterialTheme.colorScheme.errorContainer,
+                MaterialTheme.colorScheme.onErrorContainer,
+                MaterialTheme.colorScheme.onError,
+            )
+        }
+    Row(modifier = Modifier.fillMaxWidth()) {
+        Surface(
+            border = BorderStroke(2.dp, color = color.border),
+            color = color.background,
+            contentColor = color.container,
+            shape = RoundedCornerShape(MaterialTheme.shapes.small.topStart),
+            modifier = modifier
+                .clickable {
+                    Log.d(TAG, "HabitSection: draftId $draftEntryId")
+                    onAddHabitClick(draftEntryId, habitType)
+                }
+                .weight(1f)
+        ) {
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .padding(8.dp)
+            ) {
+                Text(text = habit.name, modifier = Modifier.weight(1f))
+
+                Box(
+                    modifier = Modifier
+                        .background(
+                            color.border,
+                            shape = RoundedCornerShape(MaterialTheme.shapes.medium.topStart)
+                        )
+                ) {
+                    Text(
+                        text = habit.classification.name,
+                        modifier = Modifier.padding(8.dp),
+                        color = color.classification,
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            }
+        }
+        IconButton(
+            { onClearClick(draftEntryId, habitType) },
+            colors = IconButtonDefaults.iconButtonColors().copy(
+                contentColor = MaterialTheme.colorScheme.outline
+            )
+        ) {
+            Icon(KesiIcons.Cancel, "")
         }
     }
 }
@@ -202,17 +317,6 @@ fun DashedButton(
                     RoundedCornerShape(MaterialTheme.shapes.medium.topStart)
                 )
                 .padding(8.dp)
-        )
-    }
-}
-
-@DarkLightPreviews
-@Composable
-private fun HabitSectionPreview() {
-    KesiTheme {
-        AddEntryScreen(
-            AddEntry("", "", HabitType.CORE),
-            { _, _ -> }, AddEntryUiState(true)
         )
     }
 }

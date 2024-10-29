@@ -3,5 +3,5 @@
     <string name="add_entry_screen">New Entry</string>
     <string name="cd_back">back</string>
     <string name="cd_add">add</string>
-    <string name="select_habit">Add habit</string>
+    <string name="select_habit">Habit</string>
 </resources>

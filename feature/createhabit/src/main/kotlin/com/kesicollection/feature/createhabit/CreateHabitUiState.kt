@@ -1,5 +1,8 @@
 package com.kesicollection.feature.createhabit
 
-data class CreateHabitUiState(val isCreateButtonEnabled: Boolean)
+data class CreateHabitUiState(
+    val createdHabitId: String,
+    val isCreateButtonEnabled: Boolean
+)
 
-val initialState = CreateHabitUiState(false)
+val initialState = CreateHabitUiState("", false)

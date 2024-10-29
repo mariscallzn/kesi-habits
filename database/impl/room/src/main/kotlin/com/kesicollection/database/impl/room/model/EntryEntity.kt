@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.ForeignKey.Companion.CASCADE
 import androidx.room.ForeignKey.Companion.SET_NULL
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.kesicollection.core.model.Entry
 import com.kesicollection.core.model.Status
@@ -30,7 +31,7 @@ data class EntryEntity(
     @PrimaryKey
     val id: String,
     @ColumnInfo(name = "habit_id")
-    val habitId: String,
+    val habitId: String?,
     @ColumnInfo(name = "recorded_on")
     val recordedOn: OffsetDateTime,
     @ColumnInfo(name = "triggered_by_habit_id")
@@ -40,7 +41,7 @@ data class EntryEntity(
 
 fun Entry.toEntity(): EntryEntity = EntryEntity(
     id = id,
-    habitId = habit.id,
+    habitId = habit?.id,
     recordedOn = recordedOn,
     triggeredByHabitId = triggeredBy?.id,
     status = status

@@ -1,5 +1,16 @@
 package com.kesicollection.feature.addentry
 
-data class AddEntryUiState(val saveEnabled: Boolean)
+import com.kesicollection.core.model.Habit
+import com.kesicollection.feature.addentry.navigation.EntryDraftId
 
-val initialState = AddEntryUiState(saveEnabled = false)
+data class AddEntryUiState(
+    val draftId: EntryDraftId,
+    val coreHabit: Habit? = null,
+    val triggerHabit: Habit? = null,
+    val isSaveEnabled: Boolean,
+)
+
+val initialState = AddEntryUiState(
+    draftId = "",
+    isSaveEnabled = false
+)

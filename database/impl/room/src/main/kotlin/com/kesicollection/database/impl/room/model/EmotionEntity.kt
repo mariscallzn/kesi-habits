@@ -38,3 +38,5 @@ data class EmotionEntity(
 fun Emotion.toEntity(): EmotionEntity = EmotionEntity(
     id, name, valence, arousal, status, i18Key
 )
+
+fun EmotionEntity.toEmotion(): Emotion = Emotion(id, name, valence, arousal, status, i18Key)

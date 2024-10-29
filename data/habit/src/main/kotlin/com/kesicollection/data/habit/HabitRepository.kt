@@ -7,6 +7,7 @@ import javax.inject.Inject
 
 interface HabitRepository {
     suspend fun addOrUpdateHabits(habits: List<Habit>)
+    suspend fun add(habit: Habit): Long
 }
 
 class HabitRepositoryImpl @Inject constructor(
@@ -15,4 +16,6 @@ class HabitRepositoryImpl @Inject constructor(
     override suspend fun addOrUpdateHabits(habits: List<Habit>) = habitDb.upsertHabits(habits.map {
         if (it.id.isBlank()) it.copy(id = UUID.randomUUID().toString()) else it
     })
+
+    override suspend fun add(habit: Habit) = habitDb.insert(habit)
 }

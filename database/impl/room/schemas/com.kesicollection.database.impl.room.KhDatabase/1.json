@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "ee67ab5b980231fedead36d79233e28c",
+    "identityHash": "166ef66bb99848fcf6cc379c0bf8722a",
     "entities": [
       {
         "tableName": "habits",
@@ -54,7 +54,7 @@
       },
       {
         "tableName": "entries",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `habit_id` TEXT NOT NULL, `recorded_on` TEXT NOT NULL, `triggered_by_habit_id` TEXT, `status` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`habit_id`) REFERENCES `habits`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`triggered_by_habit_id`) REFERENCES `habits`(`id`) ON UPDATE NO ACTION ON DELETE SET NULL )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `habit_id` TEXT, `recorded_on` TEXT NOT NULL, `triggered_by_habit_id` TEXT, `status` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`habit_id`) REFERENCES `habits`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`triggered_by_habit_id`) REFERENCES `habits`(`id`) ON UPDATE NO ACTION ON DELETE SET NULL )",
         "fields": [
           {
             "fieldPath": "id",
@@ -66,7 +66,7 @@
             "fieldPath": "habitId",
             "columnName": "habit_id",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "recordedOn",
@@ -361,7 +361,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ee67ab5b980231fedead36d79233e28c')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '166ef66bb99848fcf6cc379c0bf8722a')"
     ]
   }
 }

@@ -22,3 +22,5 @@ fun Influencer.toEntity(): InfluencerEntity = InfluencerEntity(
     i18Key = i18Key,
     status = status
 )
+
+fun InfluencerEntity.toInfluencer(): Influencer = Influencer(id, name, status, i18Key)

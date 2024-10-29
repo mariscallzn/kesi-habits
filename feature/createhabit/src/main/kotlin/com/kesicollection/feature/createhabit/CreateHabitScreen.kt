@@ -54,13 +54,15 @@ fun CreateHabitScreen(
 
     }
 
-//TODO:
-//    LaunchedEffect(uiState.createdHabitId) {
-//        onHabitCreated(
-//            uiState.createdHabitId,
-//            createHabit.type
-//        )
-//    }
+    LaunchedEffect(uiState.createdHabitId) {
+        if (uiState.createdHabitId.isNotBlank()) {
+            onHabitCreated(
+                createHabit.entryDraftId,
+                uiState.createdHabitId,
+                createHabit.type
+            )
+        }
+    }
 
     CreateHabitScreen(
         uiState = uiState,
@@ -69,14 +71,7 @@ fun CreateHabitScreen(
         habitName = viewModel.habitName,
         habitNameChangeValue = { value -> viewModel.updateHabitName(value) },
         onCancel = { viewModel.dispatch(ScreenActions.ClearText) },
-        onCreate = {
-            //TODO: Handle automatic navigation as google recommends from the UIState in combination of LaunchEffect
-//            viewModel.dispatch(viewModel.createHabit)
-            onHabitCreated(
-                createHabit.entryDraftId, "${viewModel.habitName}-ID",
-                createHabit.type,
-            )
-        },
+        onCreate = { viewModel.dispatch(viewModel.createHabit(Unit)) },
         modifier = modifier
     )
 }

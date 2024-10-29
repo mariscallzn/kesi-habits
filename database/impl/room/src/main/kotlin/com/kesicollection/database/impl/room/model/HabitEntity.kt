@@ -25,3 +25,7 @@ fun Habit.toEntity(): HabitEntity = HabitEntity(
     classification = classification,
     status = status,
 )
+
+fun HabitEntity.toHabit(): Habit = Habit(
+    id, name, classification, status
+)

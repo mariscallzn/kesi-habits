@@ -5,7 +5,17 @@ import androidx.room.Query
 import com.kesicollection.database.impl.room.model.InfluencerEntity
 
 @Dao
-abstract class InfluencerDao : BaseDao<InfluencerEntity> {
+interface InfluencerDao : BaseDao<InfluencerEntity> {
     @Query("SELECT * FROM influencers")
-    abstract suspend fun getAll(): List<InfluencerEntity>
+    suspend fun getAll(): List<InfluencerEntity>
+
+    @Query(
+        """
+            SELECT i.* FROM influencers i 
+            INNER JOIN entries_influencers ei ON i.id = ei.influencer_id 
+            WHERE ei.entry_id = :entryId
+    """
+    )
+    suspend fun getInfluencersForEntry(entryId: String): List<InfluencerEntity>
+
 }

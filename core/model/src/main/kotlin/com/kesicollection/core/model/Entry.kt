@@ -4,11 +4,11 @@ import java.time.OffsetDateTime
 
 data class Entry(
     val id: String,
-    val habit: Habit,
     val recordedOn: OffsetDateTime,
     val status: Status,
-    val triggeredBy: Habit?,
-    val influencers: List<Influencer>?,
-    val currentEmotions: List<Emotion>?,
-    val desiredEmotions: List<Emotion>?
+    val habit: Habit? = null,
+    val triggeredBy: Habit? = null,
+    val influencers: List<Influencer>? = null,
+    val currentEmotions: List<Emotion>? = null,
+    val desiredEmotions: List<Emotion>? = null
 )

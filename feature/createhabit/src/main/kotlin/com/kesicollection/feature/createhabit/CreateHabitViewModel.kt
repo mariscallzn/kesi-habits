@@ -15,6 +15,7 @@ import com.kesicollection.data.habit.HabitRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
+import java.util.UUID
 import javax.inject.Inject
 
 //region Screen Actions
@@ -80,21 +81,23 @@ class CreateHabitViewModel @Inject constructor(
     }
 
     //region Async Thunks
-    val createHabit = createAsyncThunk<Unit, Unit>("create-habit") { _, _ ->
-        habitRepository.addOrUpdateHabits(
-            listOf(
-                Habit(
-                    "",
-                    habitName,
-                    classification ?: Classification.NEUTRAL,
-                    Status.ACTIVE
-                )
+    val createHabit = createAsyncThunk<String, Unit>("create-habit") { _, _ ->
+        val uuid = "${UUID.randomUUID()}"
+        habitRepository.add(
+            Habit(
+                uuid,
+                habitName,
+                classification ?: Classification.NEUTRAL,
+                Status.ACTIVE
             )
         )
+        uuid
     }.apply {
-        store.builder.addCase(pending) { state, action -> state.copy(isCreateButtonEnabled = false) }
-        store.builder.addCase(fulfilled) { state, action -> state }
-        store.builder.addCase(rejected) { state, action -> state }
+        store.builder.addCase(pending) { state, _ -> state.copy(isCreateButtonEnabled = false) }
+        store.builder.addCase(fulfilled) { state, action ->
+            action.payload.getOrNull()?.let { state.copy(createdHabitId = it) } ?: state
+        }
+        store.builder.addCase(rejected) { state, _ -> state }
     }
     //endregion
 }
