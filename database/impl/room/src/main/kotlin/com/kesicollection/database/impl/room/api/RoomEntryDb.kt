@@ -1,6 +1,7 @@
 package com.kesicollection.database.impl.room.api
 
 import com.kesicollection.core.model.Entry
+import com.kesicollection.core.model.HabitType
 import com.kesicollection.database.api.EntryDb
 import com.kesicollection.database.impl.room.dao.EmotionDao
 import com.kesicollection.database.impl.room.dao.EntryDao
@@ -22,14 +23,13 @@ class RoomEntryDb @Inject constructor(
     override suspend fun insert(entry: Entry): Long =
         entryDao.insert(entry.toEntity())
 
-    override suspend fun updateCoreHabit(entryId: String, habitId: String?) {
+    override suspend fun updateHabit(entryId: String, habitId: String?, habitType: HabitType) {
         val entry = entryDao.findById(entryId)
-        entryDao.update(entry.copy(habitId = habitId))
-    }
-
-    override suspend fun updateTriggeredHabit(entryId: String, habitId: String?) {
-        val entry = entryDao.findById(entryId)
-        entryDao.update(entry.copy(triggeredByHabitId = habitId))
+        val updated = when (habitType) {
+            HabitType.CORE -> entry.copy(habitId = habitId)
+            HabitType.TRIGGER -> entry.copy(triggeredByHabitId = habitId)
+        }
+        entryDao.update(updated)
     }
 
     override suspend fun getById(id: String): Entry {

@@ -36,6 +36,7 @@ import com.kesicollection.core.designsystem.icon.KesiIcons
 import com.kesicollection.core.designsystem.state.ScaffoldDefinitionState
 import com.kesicollection.core.designsystem.utils.TAG
 import com.kesicollection.core.model.Classification
+import com.kesicollection.core.model.EmotionType
 import com.kesicollection.core.model.Habit
 import com.kesicollection.core.model.HabitType
 import com.kesicollection.feature.addentry.model.UpdateHabitThunkArgs
@@ -49,6 +50,7 @@ fun AddEntryScreen(
     onBackPress: () -> Unit,
     addEntry: AddEntry,
     onAddHabitClick: (EntryDraftId, HabitType) -> Unit,
+    onAddEmotionClick: (EntryDraftId, EmotionType) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: AddEntryViewModel = hiltViewModel()
 ) {
@@ -63,21 +65,15 @@ fun AddEntryScreen(
 
     LaunchedEffect(addEntry) {
         when {
-            addEntry.draftId.isNullOrBlank() && addEntry.habitId.isNullOrBlank() -> viewModel.dispatch(
+            addEntry.draftId.isNullOrBlank() &&
+                    addEntry.habitId.isNullOrBlank() &&
+                    addEntry.emotionId.isNullOrBlank() -> viewModel.dispatch(
                 viewModel.createDraft(Unit)
             )
 
-            addEntry.draftId?.isNotBlank() == true
-                    && addEntry.habitId?.isNotBlank() == true
-                    && addEntry.type != null -> viewModel.dispatch(
+            addEntry.draftId?.isNotBlank() == true -> viewModel.dispatch(
                 viewModel.dispatch(
-                    viewModel.updateHabit(
-                        UpdateHabitThunkArgs(
-                            addEntry.draftId,
-                            addEntry.habitId,
-                            addEntry.type
-                        )
-                    )
+                    viewModel.updateHabit(addEntry)
                 )
             )
         }
@@ -85,15 +81,10 @@ fun AddEntryScreen(
 
     AddEntryScreen(
         onAddHabitClick,
+        onAddEmotionClick,
         onClearClick = { draftId, habitType ->
             viewModel.dispatch(
-                viewModel.updateHabit(
-                    UpdateHabitThunkArgs(
-                        draftId,
-                        null,
-                        habitType
-                    )
-                )
+                viewModel.updateHabit(AddEntry(draftId = draftId, habitType = habitType))
             )
         },
         uiState,
@@ -104,6 +95,7 @@ fun AddEntryScreen(
 @Composable
 fun AddEntryScreen(
     onAddHabitClick: (EntryDraftId, HabitType) -> Unit,
+    onAddEmotionClick: (EntryDraftId, EmotionType) -> Unit,
     onClearClick: (EntryDraftId, HabitType) -> Unit,
     uiState: AddEntryUiState,
     modifier: Modifier = Modifier
@@ -159,9 +151,16 @@ fun AddEntryScreen(
             horizontalArrangement = Arrangement.spacedBy(24.dp),
             modifier = Modifier
                 .fillMaxWidth(),
-            ) {
-            CurrentEmotionsSection(modifier = Modifier.weight(1f))
-            DesireEmotionsSection(modifier = Modifier.weight(1f))
+        ) {
+            if (uiState.currentEmotions.isEmpty()) CurrentEmotionsSection(
+                uiState.draftId,
+                onAddEmotionClick,
+                modifier = Modifier.weight(1f)
+            ) else Text(text = uiState.currentEmotions.joinToString { emotion -> emotion.name + " " })
+            if (uiState.desireEmotions.isEmpty()) DesireEmotionsSection(
+                uiState.draftId,
+                onAddEmotionClick, modifier = Modifier.weight(1f)
+            ) else Text(text = uiState.desireEmotions.joinToString { emotion -> emotion.name + " " })
         }
         Box(
             modifier = Modifier
@@ -260,7 +259,11 @@ fun HabitCard(
 }
 
 @Composable
-fun CurrentEmotionsSection(modifier: Modifier = Modifier) {
+fun CurrentEmotionsSection(
+    draftEntryId: EntryDraftId,
+    onAddEmotionClick: (EntryDraftId, EmotionType) -> Unit,
+    modifier: Modifier = Modifier
+) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = "Current feelings",
@@ -272,12 +275,16 @@ fun CurrentEmotionsSection(modifier: Modifier = Modifier) {
             Modifier
                 .fillMaxWidth()
                 .heightIn(250.dp, Dp.Infinity)
-        ) { }
+        ) { onAddEmotionClick(draftEntryId, EmotionType.CURRENT) }
     }
 }
 
 @Composable
-fun DesireEmotionsSection(modifier: Modifier = Modifier) {
+fun DesireEmotionsSection(
+    draftEntryId: EntryDraftId,
+    onAddEmotionClick: (EntryDraftId, EmotionType) -> Unit,
+    modifier: Modifier = Modifier
+) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = "Desire feelings",
@@ -289,7 +296,7 @@ fun DesireEmotionsSection(modifier: Modifier = Modifier) {
             Modifier
                 .fillMaxWidth()
                 .heightIn(250.dp, Dp.Infinity)
-        ) { }
+        ) { onAddEmotionClick(draftEntryId, EmotionType.DESIRE) }
     }
 }
 

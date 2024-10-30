@@ -7,6 +7,7 @@ import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.kesicollection.core.designsystem.state.ScaffoldDefinitionState
+import com.kesicollection.core.model.EmotionType
 import com.kesicollection.core.model.HabitType
 import com.kesicollection.feature.addentry.AddEntryScreen
 import kotlinx.serialization.Serializable
@@ -15,7 +16,9 @@ import kotlinx.serialization.Serializable
 data class AddEntry(
     val draftId: String? = null,
     val habitId: String? = null,
-    val type: HabitType? = null
+    val habitType: HabitType? = null,
+    val emotionId: String? = null,//TODO: make it a list so you can receive more from the picker screen
+    val emotionType: EmotionType? = null,
 )
 
 internal typealias EntryDraftId = String
@@ -27,10 +30,18 @@ fun NavGraphBuilder.addEntryScreen(
     scaffoldDefinitionState: ScaffoldDefinitionState,
     onBackPressed: () -> Unit,
     onAddHabitClick: (EntryDraftId, HabitType) -> Unit,
+    onAddEmotionClick: (EntryDraftId, EmotionType) -> Unit,
     modifier: Modifier = Modifier
 ) {
     composable<AddEntry> { backStackEntry ->
         val addEntry = backStackEntry.toRoute<AddEntry>()
-        AddEntryScreen(scaffoldDefinitionState, onBackPressed, addEntry, onAddHabitClick, modifier)
+        AddEntryScreen(
+            scaffoldDefinitionState,
+            onBackPressed,
+            addEntry,
+            onAddHabitClick,
+            onAddEmotionClick,
+            modifier
+        )
     }
 }

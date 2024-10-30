@@ -9,9 +9,15 @@ import com.kesicollection.core.designsystem.state.ScaffoldDefinitionState
 import com.kesicollection.feature.addentry.navigation.AddEntry
 import com.kesicollection.feature.addentry.navigation.addEntryScreen
 import com.kesicollection.feature.addentry.navigation.navigateToAddEntry
+import com.kesicollection.feature.createemotion.navigation.CreateEmotion
+import com.kesicollection.feature.createemotion.navigation.createEmotionScreen
+import com.kesicollection.feature.createemotion.navigation.navigateToCreateEmotion
 import com.kesicollection.feature.createhabit.navigation.CreateHabit
 import com.kesicollection.feature.createhabit.navigation.createHabitScreen
 import com.kesicollection.feature.createhabit.navigation.navigateToCreateHabit
+import com.kesicollection.feature.emotionpicker.navigation.EmotionPicker
+import com.kesicollection.feature.emotionpicker.navigation.emotionPickerScreen
+import com.kesicollection.feature.emotionpicker.navigation.navigateToEmotionPicker
 import com.kesicollection.feature.habitpicker.navigation.HabitPicker
 import com.kesicollection.feature.habitpicker.navigation.habitPickerScreen
 import com.kesicollection.feature.habitpicker.navigation.navigateToHabitPicker
@@ -40,6 +46,9 @@ fun KhNavHost(
                     HabitPicker(type, entryDraftId)
                 )
             },
+            onAddEmotionClick = { entryDraftId, type ->
+                navController.navigateToEmotionPicker(EmotionPicker(entryDraftId, type))
+            },
             modifier = modifier
         )
         habitPickerScreen(
@@ -56,9 +65,31 @@ fun KhNavHost(
             scaffoldDefinitionState = scaffoldDefinitionState,
             onBackPressed = navController::popBackStack,
             onHabitCreated = { entryDraftId, habitId, type ->
-                navController.navigateToAddEntry(AddEntry(entryDraftId, habitId, type), navOptions {
-                    popUpTo(AddEntry()) { inclusive = true }
-                })
+                navController.popBackStack<AddEntry>(true)
+                navController.navigateToAddEntry(AddEntry(entryDraftId, habitId, type))
+            },
+            modifier = modifier,
+        )
+        emotionPickerScreen(
+            scaffoldDefinitionState = scaffoldDefinitionState,
+            onBackPressed = navController::popBackStack,
+            onCreateEmotionClick = { entryDraftId, emotionType ->
+                navController.navigateToCreateEmotion(CreateEmotion(entryDraftId, emotionType))
+            },
+            modifier = modifier,
+        )
+        createEmotionScreen(
+            scaffoldDefinitionState = scaffoldDefinitionState,
+            onBackPressed = navController::popBackStack,
+            onCreateEmotionClick = { entryDraftId, emotionId, type ->
+                navController.popBackStack<AddEntry>(true)
+                navController.navigateToAddEntry(
+                    AddEntry(
+                        draftId = entryDraftId,
+                        emotionId = emotionId,
+                        emotionType = type
+                    )
+                )
             },
             modifier = modifier,
         )

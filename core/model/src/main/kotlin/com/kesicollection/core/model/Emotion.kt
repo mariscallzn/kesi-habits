@@ -6,5 +6,9 @@ data class Emotion(
     val valence: Valence,
     val arousal: Arousal,
     val status: Status,
-    val i18Key: String?
+    val i18Key: String? = null
 )
+
+enum class EmotionType {
+    CURRENT, DESIRE
+}

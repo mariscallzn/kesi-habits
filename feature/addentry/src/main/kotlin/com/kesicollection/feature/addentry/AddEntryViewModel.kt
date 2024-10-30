@@ -10,7 +10,7 @@ import com.kesicollection.core.redux.creator.createAsyncThunk
 import com.kesicollection.core.redux.creator.createStore
 import com.kesicollection.core.redux.creator.reducer
 import com.kesicollection.data.entry.EntryRepository
-import com.kesicollection.feature.addentry.model.UpdateHabitThunkArgs
+import com.kesicollection.feature.addentry.navigation.AddEntry
 import com.kesicollection.feature.addentry.navigation.EntryDraftId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -61,7 +61,9 @@ class AddEntryViewModel @Inject constructor(
                 s.copy(
                     draftId = it.id,
                     coreHabit = it.habit,
-                    triggerHabit = it.triggeredBy
+                    triggerHabit = it.triggeredBy,
+                    currentEmotions = it.currentEmotions ?: emptyList(),
+                    desireEmotions = it.desiredEmotions ?: emptyList(),
                 )
             } ?: s
         }
@@ -83,14 +85,17 @@ class AddEntryViewModel @Inject constructor(
     }
 
     val updateHabit =
-        createAsyncThunk<Unit, UpdateHabitThunkArgs>("update-habit") { args, options ->
-            entryRepository.updateHabit(
-                args.entryDraftId,
-                args.habitId,
-                args.habitType
-            )
-
-            options.dispatch(loadDraft(args.entryDraftId))
+        createAsyncThunk<Unit, AddEntry>("update-habit") { args, options ->
+            args.draftId?.let {
+                entryRepository.updateHabit(
+                    entryId = args.draftId,
+                    habitId = args.habitId,
+                    habitType = args.habitType,
+                    emotionId = args.emotionId,
+                    emotionType = args.emotionType
+                )
+                options.dispatch(loadDraft(args.draftId))
+            } ?: throw IllegalStateException("Entry Id must not be null")
         }.apply {
             store.builder.addCase(rejected) { state, action ->
                 Log.e(TAG, "updateHabit:rejected ${action.payload.exceptionOrNull()}")
