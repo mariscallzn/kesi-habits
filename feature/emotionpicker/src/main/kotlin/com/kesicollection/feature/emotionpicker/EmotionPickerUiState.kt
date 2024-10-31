@@ -1,5 +1,11 @@
 package com.kesicollection.feature.emotionpicker
 
-data class EmotionPickerUiState(val todo: Int)
+import com.kesicollection.core.model.Emotion
 
-val initialState = EmotionPickerUiState(0)
+data class EmotionPickerUiState(
+    val emotions: List<Emotion> = emptyList(),
+    val cacheEmotions: List<Emotion> = emptyList(),
+    val selectedItems: Set<String> = emptySet()
+)
+
+val initialState = EmotionPickerUiState()
