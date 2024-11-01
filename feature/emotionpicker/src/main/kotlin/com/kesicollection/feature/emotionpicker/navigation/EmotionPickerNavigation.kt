@@ -12,9 +12,14 @@ import com.kesicollection.feature.emotionpicker.EmotionPickerScreen
 import kotlinx.serialization.Serializable
 
 internal typealias EntryDraftId = String
+internal typealias EmotionId = String
 
 @Serializable
-data class EmotionPicker(val entryDraftId: EntryDraftId, val emotionType: EmotionType)
+data class EmotionPicker(
+    val entryDraftId: EntryDraftId,
+    val emotionType: EmotionType,
+    val selectedEmotions: List<String> = emptyList()
+)
 
 fun NavController.navigateToEmotionPicker(
     emotionPicker: EmotionPicker,
@@ -25,10 +30,18 @@ fun NavGraphBuilder.emotionPickerScreen(
     scaffoldDefinitionState: ScaffoldDefinitionState,
     onBackPressed: () -> Unit,
     onCreateEmotionClick: (EntryDraftId, EmotionType) -> Unit,
+    onEmotionsSelected: (EntryDraftId, List<EmotionId>, EmotionType) -> Unit,
     modifier: Modifier,
 ) {
     composable<EmotionPicker> { backStackEntry ->
         val emotionPicker = backStackEntry.toRoute<EmotionPicker>()
-        EmotionPickerScreen(scaffoldDefinitionState, onBackPressed, emotionPicker ,onCreateEmotionClick, modifier)
+        EmotionPickerScreen(
+            scaffoldDefinitionState,
+            onBackPressed,
+            emotionPicker,
+            onCreateEmotionClick,
+            onEmotionsSelected,
+            modifier
+        )
     }
 }

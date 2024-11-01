@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navOptions
 import com.kesicollection.core.designsystem.state.ScaffoldDefinitionState
 import com.kesicollection.feature.addentry.navigation.AddEntry
 import com.kesicollection.feature.addentry.navigation.addEntryScreen
@@ -46,8 +45,8 @@ fun KhNavHost(
                     HabitPicker(type, entryDraftId)
                 )
             },
-            onAddEmotionClick = { entryDraftId, type ->
-                navController.navigateToEmotionPicker(EmotionPicker(entryDraftId, type))
+            onAddEmotionClick = { entryDraftId, emotionIds, type ->
+                navController.navigateToEmotionPicker(EmotionPicker(entryDraftId, type, emotionIds))
             },
             modifier = modifier
         )
@@ -76,6 +75,16 @@ fun KhNavHost(
             onCreateEmotionClick = { entryDraftId, emotionType ->
                 navController.navigateToCreateEmotion(CreateEmotion(entryDraftId, emotionType))
             },
+            onEmotionsSelected = { entryDraftId, emotionIds, type ->
+                navController.popBackStack<AddEntry>(true)
+                navController.navigateToAddEntry(
+                    AddEntry(
+                        draftId = entryDraftId,
+                        emotionIds = emotionIds,
+                        emotionType = type
+                    )
+                )
+            },
             modifier = modifier,
         )
         createEmotionScreen(
@@ -86,7 +95,7 @@ fun KhNavHost(
                 navController.navigateToAddEntry(
                     AddEntry(
                         draftId = entryDraftId,
-                        emotionId = emotionId,
+                        emotionIds = listOf(emotionId),
                         emotionType = type
                     )
                 )

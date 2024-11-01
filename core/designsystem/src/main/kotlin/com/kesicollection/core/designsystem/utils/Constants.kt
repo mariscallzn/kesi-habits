@@ -1,8 +1,17 @@
 package com.kesicollection.core.designsystem.utils
 
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeContent
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 
 const val TAG = "Andres"
 
@@ -12,5 +21,12 @@ fun tertiaryButtonColor(): ButtonColors {
         containerColor = MaterialTheme.colorScheme.tertiary,
         contentColor = MaterialTheme.colorScheme.onTertiary,
         disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-        disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant)
+        disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+    )
 }
+
+@Composable
+fun statusBarPaddingValues(): PaddingValues =
+    WindowInsets.statusBars
+        .add(WindowInsets.safeContent.only(WindowInsetsSides.Top))
+        .asPaddingValues()

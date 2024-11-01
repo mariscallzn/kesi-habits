@@ -15,7 +15,7 @@ interface EntryRepository {
         entryId: String,
         habitId: String?,
         habitType: HabitType?,
-        emotionId: String?,
+        emotionIds: List<String>,
         emotionType: EmotionType?
     )
 
@@ -34,15 +34,16 @@ class EntryRepositoryImpl @Inject constructor(
         entryId: String,
         habitId: String?,
         habitType: HabitType?,
-        emotionId: String?,
+        emotionIds: List<String>,
         emotionType: EmotionType?
     ) {
         when {
             habitType != null ->
                 entryDb.updateHabit(entryId, habitId, habitType)
 
-            emotionId != null && emotionType != null ->
-                entryEmotionDb.insert(EntryEmotion(entryId, emotionId), emotionType)
+            emotionIds.isNotEmpty() && emotionType != null -> emotionIds.forEach {
+                entryEmotionDb.insert(EntryEmotion(entryId, it), emotionType)
+            }
         }
     }
 

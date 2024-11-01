@@ -1,19 +1,18 @@
 package com.kesicollection.feature.emotionpicker
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.add
-import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContent
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -22,6 +21,7 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,9 +35,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kesicollection.core.designsystem.component.SearchTopBar
 import com.kesicollection.core.designsystem.icon.KesiIcons
 import com.kesicollection.core.designsystem.state.ScaffoldDefinitionState
+import com.kesicollection.core.designsystem.utils.statusBarPaddingValues
 import com.kesicollection.core.model.Emotion
 import com.kesicollection.core.model.EmotionType
 import com.kesicollection.core.model.Valence
+import com.kesicollection.feature.emotionpicker.navigation.EmotionId
 import com.kesicollection.feature.emotionpicker.navigation.EmotionPicker
 import com.kesicollection.feature.emotionpicker.navigation.EntryDraftId
 
@@ -47,6 +49,7 @@ fun EmotionPickerScreen(
     onBackPress: () -> Unit,
     emotionPicker: EmotionPicker,
     onCreateEmotionClick: (EntryDraftId, EmotionType) -> Unit,
+    onEmotionsSelected: (EntryDraftId, List<EmotionId>, EmotionType) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: EmotionPickerViewModel = hiltViewModel()
 ) {
@@ -54,19 +57,52 @@ fun EmotionPickerScreen(
 
     LaunchedEffect(Unit) {
         scaffoldDefinitionState.defineAppBarComposable {
-            SearchTopBar(
-                value = viewModel.searchTerm,
-                onValueChange = { v -> viewModel.updateSearchTerm(v) },
-                onCancel = { viewModel.dispatch(ScreenActions.ClearTextField) },
-                leadingIcon = {
-                    IconButton(onBackPress) {
-                        Icon(KesiIcons.ArrowBack, "")
-                    }
-                },
-                placeHolder = "Search",
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-            )
+                    .padding(
+                        top = statusBarPaddingValues().calculateTopPadding(),
+                        bottom = 0.dp,
+                        start = 16.dp,
+                        end = 16.dp
+                    )
+            ) {
+
+                SearchTopBar(
+                    value = viewModel.searchTerm,
+                    onValueChange = { v -> viewModel.updateSearchTerm(v) },
+                    onCancel = { viewModel.dispatch(ScreenActions.ClearTextField) },
+                    leadingIcon = {
+                        IconButton(onBackPress) {
+                            Icon(KesiIcons.ArrowBack, "")
+                        }
+                    },
+                    placeHolder = "Search",
+                    modifier = Modifier
+                        .weight(1f)
+
+                )
+
+                AnimatedVisibility(
+                    uiState.selectedItems.isNotEmpty(),
+                    enter = fadeIn() + expandHorizontally(),
+                    exit = fadeOut() + shrinkHorizontally()
+                ) {
+                    IconButton(
+                        {
+                            onEmotionsSelected(
+                                emotionPicker.entryDraftId,
+                                uiState.selectedItems.toList(),
+                                emotionPicker.emotionType
+                            )
+                        }, colors = IconButtonDefaults.iconButtonColors().copy(
+                            contentColor = MaterialTheme.colorScheme.tertiary
+                        )
+                    ) {
+                        Icon(KesiIcons.Check, "")
+                    }
+                }
+            }
         }
     }
     scaffoldDefinitionState.defineFabComposable {
@@ -78,13 +114,10 @@ fun EmotionPickerScreen(
         ) {
             Icon(KesiIcons.Add, contentDescription = "Add")
         }
-
     }
 
     LaunchedEffect(Unit) {
-        if (uiState.emotions.isEmpty()) {
-            viewModel.dispatch(viewModel.loadEmotions(Unit))
-        }
+        viewModel.dispatch(viewModel.dispatch(ScreenActions.SelectItems(emotionPicker.selectedEmotions)))
     }
 
     EmotionPickerScreen(

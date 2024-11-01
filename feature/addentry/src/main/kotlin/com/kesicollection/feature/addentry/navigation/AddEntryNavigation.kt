@@ -17,11 +17,12 @@ data class AddEntry(
     val draftId: String? = null,
     val habitId: String? = null,
     val habitType: HabitType? = null,
-    val emotionId: String? = null,//TODO: make it a list so you can receive more from the picker screen
+    val emotionIds: List<String> = emptyList(),
     val emotionType: EmotionType? = null,
 )
 
 internal typealias EntryDraftId = String
+internal typealias EmotionIds = String
 
 fun NavController.navigateToAddEntry(addEntry: AddEntry, navOptions: NavOptions? = null) =
     navigate(route = addEntry, navOptions)
@@ -30,7 +31,7 @@ fun NavGraphBuilder.addEntryScreen(
     scaffoldDefinitionState: ScaffoldDefinitionState,
     onBackPressed: () -> Unit,
     onAddHabitClick: (EntryDraftId, HabitType) -> Unit,
-    onAddEmotionClick: (EntryDraftId, EmotionType) -> Unit,
+    onAddEmotionClick: (EntryDraftId, List<EmotionIds>, EmotionType) -> Unit,
     modifier: Modifier = Modifier
 ) {
     composable<AddEntry> { backStackEntry ->

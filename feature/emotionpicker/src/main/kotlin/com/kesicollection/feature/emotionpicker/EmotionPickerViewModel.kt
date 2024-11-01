@@ -12,6 +12,7 @@ import com.kesicollection.core.redux.creator.reducer
 import com.kesicollection.data.emotion.EmotionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
@@ -21,6 +22,7 @@ internal sealed class ScreenActions {
     data class SelectionChange(val selectedId: String) : ScreenActions()
     data class Filter(val searchTerm: String) : ScreenActions()
     data object ClearTextField : ScreenActions()
+    data class SelectItems(val ids: List<String>) : ScreenActions()
 }
 //endregion
 
@@ -59,11 +61,15 @@ class EmotionPickerViewModel @Inject constructor(
                     searchTerm = ""
                     filter(state, searchTerm)
                 }
+
+                is ScreenActions.SelectItems -> state.copy(selectedItems = state.selectedItems + action.ids.toSet())
             }
         }
     )
 
-    val uiState = store.subscribe.stateIn(
+    val uiState = store.subscribe.onStart {
+        dispatch(loadEmotions(Unit))
+    }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = initialState

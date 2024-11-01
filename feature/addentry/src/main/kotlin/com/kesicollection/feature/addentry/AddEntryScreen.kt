@@ -39,8 +39,8 @@ import com.kesicollection.core.model.Classification
 import com.kesicollection.core.model.EmotionType
 import com.kesicollection.core.model.Habit
 import com.kesicollection.core.model.HabitType
-import com.kesicollection.feature.addentry.model.UpdateHabitThunkArgs
 import com.kesicollection.feature.addentry.navigation.AddEntry
+import com.kesicollection.feature.addentry.navigation.EmotionIds
 import com.kesicollection.feature.addentry.navigation.EntryDraftId
 import com.kesicollection.feature.addentry.utils.ClassificationBoxColor
 
@@ -50,7 +50,7 @@ fun AddEntryScreen(
     onBackPress: () -> Unit,
     addEntry: AddEntry,
     onAddHabitClick: (EntryDraftId, HabitType) -> Unit,
-    onAddEmotionClick: (EntryDraftId, EmotionType) -> Unit,
+    onAddEmotionClick: (EntryDraftId, List<EmotionIds>, EmotionType) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: AddEntryViewModel = hiltViewModel()
 ) {
@@ -67,7 +67,7 @@ fun AddEntryScreen(
         when {
             addEntry.draftId.isNullOrBlank() &&
                     addEntry.habitId.isNullOrBlank() &&
-                    addEntry.emotionId.isNullOrBlank() -> viewModel.dispatch(
+                    addEntry.emotionIds.isEmpty() -> viewModel.dispatch(
                 viewModel.createDraft(Unit)
             )
 
@@ -95,7 +95,7 @@ fun AddEntryScreen(
 @Composable
 fun AddEntryScreen(
     onAddHabitClick: (EntryDraftId, HabitType) -> Unit,
-    onAddEmotionClick: (EntryDraftId, EmotionType) -> Unit,
+    onAddEmotionClick: (EntryDraftId, List<EmotionIds>, EmotionType) -> Unit,
     onClearClick: (EntryDraftId, HabitType) -> Unit,
     uiState: AddEntryUiState,
     modifier: Modifier = Modifier
@@ -261,7 +261,7 @@ fun HabitCard(
 @Composable
 fun CurrentEmotionsSection(
     draftEntryId: EntryDraftId,
-    onAddEmotionClick: (EntryDraftId, EmotionType) -> Unit,
+    onAddEmotionClick: (EntryDraftId, List<EmotionIds>, EmotionType) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
@@ -275,14 +275,14 @@ fun CurrentEmotionsSection(
             Modifier
                 .fillMaxWidth()
                 .heightIn(250.dp, Dp.Infinity)
-        ) { onAddEmotionClick(draftEntryId, EmotionType.CURRENT) }
+        ) { onAddEmotionClick(draftEntryId, /*TODO*/ emptyList(), EmotionType.CURRENT) }
     }
 }
 
 @Composable
 fun DesireEmotionsSection(
     draftEntryId: EntryDraftId,
-    onAddEmotionClick: (EntryDraftId, EmotionType) -> Unit,
+    onAddEmotionClick: (EntryDraftId, List<EmotionIds>, EmotionType) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
@@ -296,7 +296,7 @@ fun DesireEmotionsSection(
             Modifier
                 .fillMaxWidth()
                 .heightIn(250.dp, Dp.Infinity)
-        ) { onAddEmotionClick(draftEntryId, EmotionType.DESIRE) }
+        ) { onAddEmotionClick(draftEntryId, /*TODO*/ emptyList(), EmotionType.DESIRE) }
     }
 }
 

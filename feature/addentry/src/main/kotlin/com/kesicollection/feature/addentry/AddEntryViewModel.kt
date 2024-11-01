@@ -91,7 +91,7 @@ class AddEntryViewModel @Inject constructor(
                     entryId = args.draftId,
                     habitId = args.habitId,
                     habitType = args.habitType,
-                    emotionId = args.emotionId,
+                    emotionIds = args.emotionIds,
                     emotionType = args.emotionType
                 )
                 options.dispatch(loadDraft(args.draftId))

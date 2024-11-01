@@ -1,13 +1,5 @@
 package com.kesicollection.core.designsystem.component
 
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.add
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContent
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -18,7 +10,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import com.kesicollection.core.designsystem.icon.KesiIcons
 import com.kesicollection.core.designsystem.preview.DarkLightPreviews
 import com.kesicollection.core.designsystem.theme.KesiTheme
@@ -35,15 +26,7 @@ fun SearchTopBar(
     OutlinedTextField(
         value,
         onValueChange,
-        modifier.padding(
-            top = WindowInsets.statusBars
-                .add(WindowInsets.safeContent.only(WindowInsetsSides.Top))
-                .asPaddingValues()
-                .calculateTopPadding(),
-            bottom = 0.dp,
-            start = 16.dp,
-            end = 16.dp
-        ),
+        modifier,
         placeholder = { placeHolder?.let { Text(it) } },
         leadingIcon = leadingIcon,
         trailingIcon = {
