@@ -1,5 +1,6 @@
 package com.kesicollection.database.impl.room.api
 
+import com.kesicollection.core.model.EmotionType
 import com.kesicollection.core.model.Entry
 import com.kesicollection.core.model.HabitType
 import com.kesicollection.database.api.EntryDb
@@ -23,9 +24,9 @@ class RoomEntryDb @Inject constructor(
     override suspend fun insert(entry: Entry): Long =
         entryDao.insert(entry.toEntity())
 
-    override suspend fun updateHabit(entryId: String, habitId: String?, habitType: HabitType) {
+    override suspend fun updateHabit(entryId: String, habitId: String?, type: HabitType) {
         val entry = entryDao.findById(entryId)
-        val updated = when (habitType) {
+        val updated = when (type) {
             HabitType.CORE -> entry.copy(habitId = habitId)
             HabitType.TRIGGER -> entry.copy(triggeredByHabitId = habitId)
         }
@@ -36,8 +37,14 @@ class RoomEntryDb @Inject constructor(
         return entryDao.findEntryHabitById(id).toEntry()
             .copy(
                 influencers = influencerDao.getInfluencersForEntry(id).map { it.toInfluencer() },
-                currentEmotions = emotionDao.getCurrentEmotionsForEntry(id).map { it.toEmotion() },
-                desiredEmotions = emotionDao.getDesireEmotionsForEntry(id).map { it.toEmotion() }
+                currentEmotions = emotionDao.getEmotionsByEntryIdAndEmotionType(
+                    id,
+                    EmotionType.CURRENT
+                ).map { it.toEmotion() },
+                desiredEmotions = emotionDao.getEmotionsByEntryIdAndEmotionType(
+                    id,
+                    EmotionType.DESIRE
+                ).map { it.toEmotion() }
             )
     }
 }

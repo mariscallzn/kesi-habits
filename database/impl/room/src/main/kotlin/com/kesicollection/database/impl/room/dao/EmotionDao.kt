@@ -2,6 +2,7 @@ package com.kesicollection.database.impl.room.dao
 
 import androidx.room.Dao
 import androidx.room.Query
+import com.kesicollection.core.model.EmotionType
 import com.kesicollection.database.impl.room.model.EmotionEntity
 
 @Dao
@@ -13,18 +14,12 @@ interface EmotionDao : BaseDao<EmotionEntity> {
     @Query(
         """
         SELECT e.* FROM emotions e
-        INNER JOIN entries_current_emotions ece ON e.id = ece.emotion_id
-        WHERE ece.entry_id = :entryId
+        INNER JOIN entries_emotions ee ON e.id = ee.emotion_id
+        WHERE ee.entry_id = :entryId AND ee.emotion_type = :emotionType
     """
     )
-    suspend fun getCurrentEmotionsForEntry(entryId: String): List<EmotionEntity>
-
-    @Query(
-        """
-        SELECT e.* FROM emotions e
-        INNER JOIN entries_desire_emotions ede ON e.id = ede.emotion_id
-        WHERE ede.entry_id = :entryId
-    """
-    )
-    suspend fun getDesireEmotionsForEntry(entryId: String): List<EmotionEntity>
+    suspend fun getEmotionsByEntryIdAndEmotionType(
+        entryId: String,
+        emotionType: EmotionType
+    ): List<EmotionEntity>
 }

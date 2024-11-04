@@ -84,7 +84,7 @@ fun EmotionPickerScreen(
                 )
 
                 AnimatedVisibility(
-                    uiState.selectedItems.isNotEmpty(),
+                    uiState.selectedItems.isNotEmpty() || uiState.isEditing,
                     enter = fadeIn() + expandHorizontally(),
                     exit = fadeOut() + shrinkHorizontally()
                 ) {
@@ -104,20 +104,22 @@ fun EmotionPickerScreen(
                 }
             }
         }
-    }
-    scaffoldDefinitionState.defineFabComposable {
-        FloatingActionButton(
-            onClick = {
-                onCreateEmotionClick(emotionPicker.entryDraftId, emotionPicker.emotionType)
-            }, Modifier
-                .imePadding()
-        ) {
-            Icon(KesiIcons.Add, contentDescription = "Add")
+        scaffoldDefinitionState.defineFabComposable {
+            FloatingActionButton(
+                onClick = {
+                    onCreateEmotionClick(emotionPicker.entryDraftId, emotionPicker.emotionType)
+                }, Modifier
+                    .imePadding()
+            ) {
+                Icon(KesiIcons.Add, contentDescription = "Add")
+            }
         }
     }
 
     LaunchedEffect(Unit) {
-        viewModel.dispatch(viewModel.dispatch(ScreenActions.SelectItems(emotionPicker.selectedEmotions)))
+        if (uiState.selectedItems.isEmpty() && emotionPicker.selectedEmotions.isNotEmpty()) {
+            viewModel.dispatch(viewModel.dispatch(ScreenActions.SelectItems(emotionPicker.selectedEmotions)))
+        }
     }
 
     EmotionPickerScreen(
@@ -142,7 +144,7 @@ fun EmotionPickerScreen(
             .padding(horizontal = 16.dp)
             .imePadding(),
     ) {
-        uiState.emotions.map { item ->
+        uiState.displayedEmotions.map { item ->
             val isSelected = uiState.selectedItems.contains(item.id)
             EmotionItem(item, onEmotionClick, isSelected)
         }

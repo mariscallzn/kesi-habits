@@ -7,12 +7,18 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -33,12 +39,18 @@ import com.kesicollection.core.designsystem.component.CommonTopAppBar
 import com.kesicollection.core.designsystem.component.CreationButton
 import com.kesicollection.core.designsystem.component.DashedBox
 import com.kesicollection.core.designsystem.icon.KesiIcons
+import com.kesicollection.core.designsystem.preview.DarkLightPreviews
 import com.kesicollection.core.designsystem.state.ScaffoldDefinitionState
+import com.kesicollection.core.designsystem.theme.KesiTheme
 import com.kesicollection.core.designsystem.utils.TAG
+import com.kesicollection.core.model.Arousal
 import com.kesicollection.core.model.Classification
+import com.kesicollection.core.model.Emotion
 import com.kesicollection.core.model.EmotionType
 import com.kesicollection.core.model.Habit
 import com.kesicollection.core.model.HabitType
+import com.kesicollection.core.model.Status
+import com.kesicollection.core.model.Valence
 import com.kesicollection.feature.addentry.navigation.AddEntry
 import com.kesicollection.feature.addentry.navigation.EmotionIds
 import com.kesicollection.feature.addentry.navigation.EntryDraftId
@@ -104,7 +116,8 @@ fun AddEntryScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
@@ -152,29 +165,25 @@ fun AddEntryScreen(
             modifier = Modifier
                 .fillMaxWidth(),
         ) {
-            if (uiState.currentEmotions.isEmpty()) CurrentEmotionsSection(
+            CurrentEmotionsSection(
                 uiState.draftId,
                 onAddEmotionClick,
+                uiState.currentEmotions,
                 modifier = Modifier.weight(1f)
-            ) else Text(text = uiState.currentEmotions.joinToString { emotion -> emotion.name + " " })
-            if (uiState.desireEmotions.isEmpty()) DesireEmotionsSection(
+            )
+            DesireEmotionsSection(
                 uiState.draftId,
-                onAddEmotionClick, modifier = Modifier.weight(1f)
-            ) else Text(text = uiState.desireEmotions.joinToString { emotion -> emotion.name + " " })
-        }
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            CreationButton(
-                enabled = uiState.isSaveEnabled,
-                onClick = {},
-                modifier = Modifier.fillMaxWidth(),
-                text = "add"
+                onAddEmotionClick,
+                uiState.desireEmotions,
+                modifier = Modifier.weight(1f)
             )
         }
+        CreationButton(
+            enabled = uiState.isSaveEnabled,
+            onClick = {},
+            modifier = Modifier.fillMaxWidth(),
+            text = "add"
+        )
     }
 }
 
@@ -258,10 +267,73 @@ fun HabitCard(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun EmotionCard(
+    draftEntryId: EntryDraftId,
+    onAddEmotionClick: (EntryDraftId, List<EmotionIds>, EmotionType) -> Unit,
+    emotionType: EmotionType,
+    emotions: List<Emotion>,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        border = BorderStroke(2.dp, color = MaterialTheme.colorScheme.primaryContainer),
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        shape = RoundedCornerShape(MaterialTheme.shapes.small.topStart),
+        modifier = modifier
+            .clickable { onAddEmotionClick(draftEntryId, emotions.map { it.id }, emotionType) }
+    ) {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+            modifier = Modifier.padding(horizontal = 16.dp)
+        ) {
+            emotions.map {
+                EmotionItem(
+                    it,
+                    { onAddEmotionClick(draftEntryId, emotions.map { e -> e.id }, emotionType) })
+            }
+        }
+    }
+}
+
+@Composable
+fun EmotionItem(
+    emotion: Emotion,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val selectedColor = when (emotion.valence) {
+        Valence.NEGATIVE -> FilterChipDefaults.filterChipColors().copy(
+            selectedLabelColor = MaterialTheme.colorScheme.onErrorContainer,
+            selectedContainerColor = MaterialTheme.colorScheme.errorContainer,
+        )
+
+        Valence.NEUTRAL -> FilterChipDefaults.filterChipColors().copy(
+            selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
+            selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+        )
+
+        Valence.POSITIVE -> FilterChipDefaults.filterChipColors().copy(
+            selectedLabelColor = MaterialTheme.colorScheme.onTertiaryContainer,
+            selectedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
+        )
+    }
+    FilterChip(
+        selected = true, onClick = onClick, label = {
+            Text(emotion.name, style = MaterialTheme.typography.bodyLarge)
+        },
+        modifier = modifier,
+        colors = selectedColor,
+        shape = RoundedCornerShape(MaterialTheme.shapes.large.topStart)
+    )
+}
+
 @Composable
 fun CurrentEmotionsSection(
     draftEntryId: EntryDraftId,
     onAddEmotionClick: (EntryDraftId, List<EmotionIds>, EmotionType) -> Unit,
+    emotions: List<Emotion>,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
@@ -270,12 +342,26 @@ fun CurrentEmotionsSection(
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(bottom = 16.dp)
         )
-        DashedButton(
-            "",
+        if (emotions.isEmpty())
+            DashedButton(
+                "",
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(250.dp, Dp.Infinity)
+            ) {
+                onAddEmotionClick(
+                    draftEntryId,
+                    emptyList(),
+                    EmotionType.CURRENT
+                )
+            } else EmotionCard(
+            draftEntryId,
+            onAddEmotionClick,
+            EmotionType.CURRENT,
+            emotions,
             Modifier
                 .fillMaxWidth()
-                .heightIn(250.dp, Dp.Infinity)
-        ) { onAddEmotionClick(draftEntryId, /*TODO*/ emptyList(), EmotionType.CURRENT) }
+        )
     }
 }
 
@@ -283,6 +369,7 @@ fun CurrentEmotionsSection(
 fun DesireEmotionsSection(
     draftEntryId: EntryDraftId,
     onAddEmotionClick: (EntryDraftId, List<EmotionIds>, EmotionType) -> Unit,
+    emotions: List<Emotion>,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
@@ -291,12 +378,22 @@ fun DesireEmotionsSection(
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(bottom = 16.dp)
         )
-        DashedButton(
-            "",
-            Modifier
+        if (emotions.isEmpty())
+            DashedButton(
+                "",
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(250.dp, Dp.Infinity)
+            ) {
+                onAddEmotionClick(
+                    draftEntryId,
+                    emptyList(),
+                    EmotionType.DESIRE
+                )
+            } else EmotionCard(
+            draftEntryId, onAddEmotionClick, EmotionType.DESIRE, emotions, Modifier
                 .fillMaxWidth()
-                .heightIn(250.dp, Dp.Infinity)
-        ) { onAddEmotionClick(draftEntryId, /*TODO*/ emptyList(), EmotionType.DESIRE) }
+        )
     }
 }
 
@@ -324,6 +421,25 @@ fun DashedButton(
                     RoundedCornerShape(MaterialTheme.shapes.medium.topStart)
                 )
                 .padding(8.dp)
+        )
+    }
+}
+
+@DarkLightPreviews
+@Composable
+private fun AddEntryScreenPreview() {
+    KesiTheme {
+        AddEntryScreen(
+            onAddEmotionClick = { _, _, _ -> },
+            onAddHabitClick = { _, _ -> },
+            onClearClick = { _, _ -> },
+            uiState = initialState.copy(
+                currentEmotions = listOf(
+                    Emotion("", "Happy", Valence.POSITIVE, Arousal.MODERATE, Status.ACTIVE),
+                    Emotion("", "Serene", Valence.NEUTRAL, Arousal.MODERATE, Status.ACTIVE),
+                    Emotion("", "Sad", Valence.NEGATIVE, Arousal.MODERATE, Status.ACTIVE),
+                )
+            )
         )
     }
 }

@@ -3,30 +3,30 @@ package com.kesicollection.database.impl.room.api
 import com.kesicollection.core.model.EmotionType
 import com.kesicollection.core.model.EntryEmotion
 import com.kesicollection.database.api.EntryEmotionDb
-import com.kesicollection.database.impl.room.dao.EntryCurrentEmotionDao
-import com.kesicollection.database.impl.room.dao.EntryDesireEmotionDao
-import com.kesicollection.database.impl.room.model.EntryCurrentEmotionCrossRef
-import com.kesicollection.database.impl.room.model.EntryDesireEmotionCrossRef
+import com.kesicollection.database.impl.room.dao.EntryEmotionDao
+import com.kesicollection.database.impl.room.model.toEntity
+import com.kesicollection.database.impl.room.model.toEntryEmotion
 import javax.inject.Inject
 
 class RoomEntryEmotionDb @Inject constructor(
-    private val currentEmotionDao: EntryCurrentEmotionDao,
-    private val desireEmotionDao: EntryDesireEmotionDao
+    private val entryEmotionDao: EntryEmotionDao
 ) : EntryEmotionDb {
-    override suspend fun insert(entryEmotion: EntryEmotion, type: EmotionType): Long = when (type) {
-        EmotionType.CURRENT -> currentEmotionDao.insert(
-            EntryCurrentEmotionCrossRef(
-                entryEmotion.entryId,
-                entryEmotion.emotionId,
-            )
-        )
 
-        EmotionType.DESIRE -> desireEmotionDao.insert(
-            EntryDesireEmotionCrossRef(
-                entryEmotion.entryId,
-                entryEmotion.emotionId,
-            )
-        )
+    override suspend fun getEntryEmotionByEntryIdAndType(
+        entryId: String,
+        type: EmotionType
+    ): List<EntryEmotion> =
+        entryEmotionDao.getEntryEmotionByEntryIdAndEmotionType(entryId, type)
+            .map { it.toEntryEmotion() }
+
+
+    override suspend fun delete(entryEmotionId: Long) {
+        val entryEmotion = entryEmotionDao.findById(entryEmotionId)
+        entryEmotionDao.delete(entryEmotion)
     }
+
+    override suspend fun insert(entryEmotion: EntryEmotion): Long = entryEmotionDao.insert(
+        entryEmotion.toEntity()
+    )
 
 }

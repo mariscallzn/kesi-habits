@@ -41,8 +41,30 @@ class EntryRepositoryImpl @Inject constructor(
             habitType != null ->
                 entryDb.updateHabit(entryId, habitId, habitType)
 
-            emotionIds.isNotEmpty() && emotionType != null -> emotionIds.forEach {
-                entryEmotionDb.insert(EntryEmotion(entryId, it), emotionType)
+            emotionType != null -> {
+                val allEmotionsByEntry =
+                    entryEmotionDb.getEntryEmotionByEntryIdAndType(entryId, emotionType)
+                val emotionsSet = emotionIds.toSet()
+                val allEmotionsSet = allEmotionsByEntry.map { it.emotionId }.toSet()
+
+                val removedItems =
+                    allEmotionsByEntry.filterNot { emotionsSet.contains(it.emotionId) }
+                removedItems.forEach {
+                    entryEmotionDb.delete(it.id)
+                }
+
+                val addedItems = emotionIds.filterNot { allEmotionsSet.contains(it) }
+                addedItems.forEach {
+                    entryEmotionDb.insert(
+                        EntryEmotion(
+                            entryId = entryId,
+                            emotionId = it,
+                            emotionType = emotionType
+                        )
+                    )
+                }
+
+                println("Andres: updateHabit removedItems $removedItems addedItems $addedItems")
             }
         }
     }

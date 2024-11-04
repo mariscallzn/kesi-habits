@@ -62,7 +62,9 @@ class EmotionPickerViewModel @Inject constructor(
                     filter(state, searchTerm)
                 }
 
-                is ScreenActions.SelectItems -> state.copy(selectedItems = state.selectedItems + action.ids.toSet())
+                is ScreenActions.SelectItems -> state.copy(
+                    isEditing = true,
+                    selectedItems = state.selectedItems + action.ids.toSet())
             }
         }
     )
@@ -81,8 +83,8 @@ class EmotionPickerViewModel @Inject constructor(
 
     private fun filter(state: EmotionPickerUiState, term: String): EmotionPickerUiState {
         val filtered = state.cacheEmotions.filter { it.name.contains(term, ignoreCase = true) }
-        return if (term.isNotBlank()) state.copy(emotions = filtered) else
-            state.copy(emotions = state.cacheEmotions)
+        return if (term.isNotBlank()) state.copy(displayedEmotions = filtered) else
+            state.copy(displayedEmotions = state.cacheEmotions)
     }
 
     //region Async Thunks
@@ -91,7 +93,7 @@ class EmotionPickerViewModel @Inject constructor(
     }.apply {
         store.builder.addCase(fulfilled) { s, a ->
             a.payload.getOrNull()
-                ?.let { s.copy(emotions = it, cacheEmotions = it, selectedItems = emptySet()) } ?: s
+                ?.let { s.copy(displayedEmotions = it, cacheEmotions = it) } ?: s
         }
     }
     //endregion
