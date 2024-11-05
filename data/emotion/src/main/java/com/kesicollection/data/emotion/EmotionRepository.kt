@@ -9,7 +9,7 @@ interface EmotionRepository {
     suspend fun fetch(): List<Emotion>
 }
 
-class EmotionRepositoryImpl @Inject constructor(
+internal class EmotionRepositoryImpl @Inject constructor(
     private val emotionDb: EmotionDb
 ) : EmotionRepository {
     override suspend fun add(emotion: Emotion): Long = emotionDb.insert(emotion)

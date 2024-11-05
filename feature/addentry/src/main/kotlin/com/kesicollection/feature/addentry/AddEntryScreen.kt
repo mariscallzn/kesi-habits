@@ -49,11 +49,13 @@ import com.kesicollection.core.model.Emotion
 import com.kesicollection.core.model.EmotionType
 import com.kesicollection.core.model.Habit
 import com.kesicollection.core.model.HabitType
+import com.kesicollection.core.model.Influencer
 import com.kesicollection.core.model.Status
 import com.kesicollection.core.model.Valence
 import com.kesicollection.feature.addentry.navigation.AddEntry
 import com.kesicollection.feature.addentry.navigation.EmotionIds
 import com.kesicollection.feature.addentry.navigation.EntryDraftId
+import com.kesicollection.feature.addentry.navigation.InfluencersIds
 import com.kesicollection.feature.addentry.utils.ClassificationBoxColor
 
 @Composable
@@ -63,6 +65,7 @@ fun AddEntryScreen(
     addEntry: AddEntry,
     onAddHabitClick: (EntryDraftId, HabitType) -> Unit,
     onAddEmotionClick: (EntryDraftId, List<EmotionIds>, EmotionType) -> Unit,
+    onAddInfluencerClick: (EntryDraftId, List<InfluencersIds>) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: AddEntryViewModel = hiltViewModel()
 ) {
@@ -94,6 +97,7 @@ fun AddEntryScreen(
     AddEntryScreen(
         onAddHabitClick,
         onAddEmotionClick,
+        onAddInfluencerClick,
         onClearClick = { draftId, habitType ->
             viewModel.dispatch(
                 viewModel.updateHabit(AddEntry(draftId = draftId, habitType = habitType))
@@ -108,6 +112,7 @@ fun AddEntryScreen(
 fun AddEntryScreen(
     onAddHabitClick: (EntryDraftId, HabitType) -> Unit,
     onAddEmotionClick: (EntryDraftId, List<EmotionIds>, EmotionType) -> Unit,
+    onAddInfluencerClick: (EntryDraftId, List<InfluencersIds>) -> Unit,
     onClearClick: (EntryDraftId, HabitType) -> Unit,
     uiState: AddEntryUiState,
     modifier: Modifier = Modifier
@@ -120,6 +125,11 @@ fun AddEntryScreen(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+
+        InfoContainer({}) {
+            Text("Nov 5 • 7:38 AM")
+        }
+
         Text(
             text = stringResource(R.string.select_habit),
             style = MaterialTheme.typography.titleMedium,
@@ -158,6 +168,23 @@ fun AddEntryScreen(
                 uiState.draftId,
                 HabitType.TRIGGER
             )
+        }
+
+        Text(
+            text = "What influenced you to act?",
+            style = MaterialTheme.typography.titleMedium,
+        )
+        if (uiState.influencers.isNotEmpty()) {
+            InfluencerCard(uiState.influencers, {
+                onAddInfluencerClick(uiState.draftId, uiState.influencers.map { it.id })
+            }, modifier = Modifier.fillMaxWidth())
+        } else {
+            DashedButton(
+                "",
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                onAddInfluencerClick(uiState.draftId, emptyList())
+            }
         }
 
         Row(
@@ -267,14 +294,47 @@ fun HabitCard(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun EmotionCard(
-    draftEntryId: EntryDraftId,
-    onAddEmotionClick: (EntryDraftId, List<EmotionIds>, EmotionType) -> Unit,
-    emotionType: EmotionType,
+    onClick: () -> Unit,
     emotions: List<Emotion>,
     modifier: Modifier = Modifier
+) {
+    InfoContainer(onClick, modifier = modifier) {
+        emotions.map {
+            EmotionItem(it, onClick)
+        }
+    }
+}
+
+@Composable
+fun InfluencerCard(
+    influencer: List<Influencer>,
+    onContainerClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    InfoContainer(onContainerClick, modifier = modifier) {
+        influencer.map {
+            FilterChip(
+                selected = true, onClick = onContainerClick, label = {
+                    Text(it.name, style = MaterialTheme.typography.bodyLarge)
+                },
+                colors = FilterChipDefaults.filterChipColors().copy(
+                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                ),
+                shape = RoundedCornerShape(MaterialTheme.shapes.large.topStart)
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun InfoContainer(
+    onContainerClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
 ) {
     Surface(
         border = BorderStroke(2.dp, color = MaterialTheme.colorScheme.primaryContainer),
@@ -282,18 +342,12 @@ fun EmotionCard(
         contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
         shape = RoundedCornerShape(MaterialTheme.shapes.small.topStart),
         modifier = modifier
-            .clickable { onAddEmotionClick(draftEntryId, emotions.map { it.id }, emotionType) }
+            .clickable { onContainerClick() }
     ) {
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
             modifier = Modifier.padding(horizontal = 16.dp)
-        ) {
-            emotions.map {
-                EmotionItem(
-                    it,
-                    { onAddEmotionClick(draftEntryId, emotions.map { e -> e.id }, emotionType) })
-            }
-        }
+        ) { content() }
     }
 }
 
@@ -355,9 +409,13 @@ fun CurrentEmotionsSection(
                     EmotionType.CURRENT
                 )
             } else EmotionCard(
-            draftEntryId,
-            onAddEmotionClick,
-            EmotionType.CURRENT,
+            {
+                onAddEmotionClick(
+                    draftEntryId,
+                    emotions.map { it.id },
+                    EmotionType.CURRENT
+                )
+            },
             emotions,
             Modifier
                 .fillMaxWidth()
@@ -391,7 +449,15 @@ fun DesireEmotionsSection(
                     EmotionType.DESIRE
                 )
             } else EmotionCard(
-            draftEntryId, onAddEmotionClick, EmotionType.DESIRE, emotions, Modifier
+            {
+                onAddEmotionClick(
+                    draftEntryId,
+                    emotions.map { it.id },
+                    EmotionType.DESIRE
+                )
+            },
+            emotions,
+            Modifier
                 .fillMaxWidth()
         )
     }
@@ -432,6 +498,7 @@ private fun AddEntryScreenPreview() {
         AddEntryScreen(
             onAddEmotionClick = { _, _, _ -> },
             onAddHabitClick = { _, _ -> },
+            onAddInfluencerClick = { _, _ -> },
             onClearClick = { _, _ -> },
             uiState = initialState.copy(
                 currentEmotions = listOf(

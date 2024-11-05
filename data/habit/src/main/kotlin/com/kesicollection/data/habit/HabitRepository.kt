@@ -10,7 +10,7 @@ interface HabitRepository {
     suspend fun add(habit: Habit): Long
 }
 
-class HabitRepositoryImpl @Inject constructor(
+internal class HabitRepositoryImpl @Inject constructor(
     private val habitDb: HabitDb
 ) : HabitRepository {
     override suspend fun addOrUpdateHabits(habits: List<Habit>) = habitDb.upsertHabits(habits.map {

@@ -19,10 +19,12 @@ data class AddEntry(
     val habitType: HabitType? = null,
     val emotionIds: List<String> = emptyList(),
     val emotionType: EmotionType? = null,
+    val influencerIds: List<String>? = null
 )
 
 internal typealias EntryDraftId = String
 internal typealias EmotionIds = String
+internal typealias InfluencersIds = String
 
 fun NavController.navigateToAddEntry(addEntry: AddEntry, navOptions: NavOptions? = null) =
     navigate(route = addEntry, navOptions)
@@ -32,17 +34,19 @@ fun NavGraphBuilder.addEntryScreen(
     onBackPressed: () -> Unit,
     onAddHabitClick: (EntryDraftId, HabitType) -> Unit,
     onAddEmotionClick: (EntryDraftId, List<EmotionIds>, EmotionType) -> Unit,
+    onAddInfluencerClick: (EntryDraftId, List<InfluencersIds>) -> Unit,
     modifier: Modifier = Modifier
 ) {
     composable<AddEntry> { backStackEntry ->
         val addEntry = backStackEntry.toRoute<AddEntry>()
         AddEntryScreen(
-            scaffoldDefinitionState,
-            onBackPressed,
-            addEntry,
-            onAddHabitClick,
-            onAddEmotionClick,
-            modifier
+            scaffoldDefinitionState = scaffoldDefinitionState,
+            onBackPress = onBackPressed,
+            addEntry = addEntry,
+            onAddHabitClick = onAddHabitClick,
+            onAddEmotionClick = onAddEmotionClick,
+            onAddInfluencerClick = onAddInfluencerClick,
+            modifier = modifier
         )
     }
 }

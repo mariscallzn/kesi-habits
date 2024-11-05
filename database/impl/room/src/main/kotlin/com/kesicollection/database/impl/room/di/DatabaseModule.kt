@@ -19,7 +19,5 @@ internal object DatabaseModule {
         @ApplicationContext context: Context
     ): KhDatabase = Room.databaseBuilder(
         context, KhDatabase::class.java, "kh-database"
-    )
-        .createFromAsset("database/kh-database.db")
-        .build()
+    ).build()
 }

@@ -64,6 +64,7 @@ class AddEntryViewModel @Inject constructor(
                     triggerHabit = it.triggeredBy,
                     currentEmotions = it.currentEmotions ?: emptyList(),
                     desireEmotions = it.desiredEmotions ?: emptyList(),
+                    influencers = it.influencers ?: emptyList()
                 )
             } ?: s
         }
@@ -92,7 +93,8 @@ class AddEntryViewModel @Inject constructor(
                     habitId = args.habitId,
                     habitType = args.habitType,
                     emotionIds = args.emotionIds,
-                    emotionType = args.emotionType
+                    emotionType = args.emotionType,
+                    influencersIds = args.influencerIds
                 )
                 options.dispatch(loadDraft(args.draftId))
             } ?: throw IllegalStateException("Entry Id must not be null")

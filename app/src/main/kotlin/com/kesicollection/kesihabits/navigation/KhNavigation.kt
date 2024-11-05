@@ -14,6 +14,9 @@ import com.kesicollection.feature.createemotion.navigation.navigateToCreateEmoti
 import com.kesicollection.feature.createhabit.navigation.CreateHabit
 import com.kesicollection.feature.createhabit.navigation.createHabitScreen
 import com.kesicollection.feature.createhabit.navigation.navigateToCreateHabit
+import com.kesicollection.feature.createinfluencer.navigation.CreateInfluencer
+import com.kesicollection.feature.createinfluencer.navigation.createInfluencerScreen
+import com.kesicollection.feature.createinfluencer.navigation.navigateToCreateInfluencer
 import com.kesicollection.feature.emotionpicker.navigation.EmotionPicker
 import com.kesicollection.feature.emotionpicker.navigation.emotionPickerScreen
 import com.kesicollection.feature.emotionpicker.navigation.navigateToEmotionPicker
@@ -22,6 +25,9 @@ import com.kesicollection.feature.habitpicker.navigation.habitPickerScreen
 import com.kesicollection.feature.habitpicker.navigation.navigateToHabitPicker
 import com.kesicollection.feature.weeklyhabits.navigation.WeeklyHabits
 import com.kesicollection.feature.weeklyhabits.navigation.weeklyHabitsScreen
+import com.kesicollection.influencerpicker.navigation.InfluencerPicker
+import com.kesicollection.influencerpicker.navigation.influencerPickerScreen
+import com.kesicollection.influencerpicker.navigation.navigateToInfluencerPicker
 
 @Composable
 fun KhNavHost(
@@ -48,6 +54,11 @@ fun KhNavHost(
             onAddEmotionClick = { entryDraftId, emotionIds, type ->
                 navController.navigateToEmotionPicker(EmotionPicker(entryDraftId, type, emotionIds))
             },
+            onAddInfluencerClick = {entryDraftId, influencerIds ->
+                navController.navigateToInfluencerPicker(
+                    InfluencerPicker(entryDraftId, influencerIds)
+                )
+            },
             modifier = modifier
         )
         habitPickerScreen(
@@ -73,6 +84,7 @@ fun KhNavHost(
             scaffoldDefinitionState = scaffoldDefinitionState,
             onBackPressed = navController::popBackStack,
             onCreateEmotionClick = { entryDraftId, emotionType ->
+                //TODO: I have to carry the previously selected ids otherwise I'll remove them and just assign the created one only
                 navController.navigateToCreateEmotion(CreateEmotion(entryDraftId, emotionType))
             },
             onEmotionsSelected = { entryDraftId, emotionIds, type ->
@@ -97,6 +109,37 @@ fun KhNavHost(
                         draftId = entryDraftId,
                         emotionIds = listOf(emotionId),
                         emotionType = type
+                    )
+                )
+            },
+            modifier = modifier,
+        )
+        influencerPickerScreen(
+            scaffoldDefinitionState = scaffoldDefinitionState,
+            onBackPressed = navController::popBackStack,
+            onCreateInfluencerClick = { entryDraftId ->
+                navController.navigateToCreateInfluencer(CreateInfluencer(entryDraftId))
+            },
+            onInfluencersSelected = { entryDraftId, ids ->
+                navController.popBackStack<AddEntry>(true)
+                navController.navigateToAddEntry(
+                    AddEntry(
+                        draftId = entryDraftId,
+                        influencerIds = ids,
+                    )
+                )
+            },
+            modifier = modifier,
+        )
+        createInfluencerScreen(
+            scaffoldDefinitionState = scaffoldDefinitionState,
+            onBackPressed = navController::popBackStack,
+            onCreateInfluencerClick = { entryDraftId, createdInfluencerId ->
+                navController.popBackStack<AddEntry>(true)
+                navController.navigateToAddEntry(
+                    AddEntry(
+                        draftId = entryDraftId,
+                        influencerIds = listOf(createdInfluencerId),
                     )
                 )
             },

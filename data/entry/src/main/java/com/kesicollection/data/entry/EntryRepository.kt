@@ -3,9 +3,11 @@ package com.kesicollection.data.entry
 import com.kesicollection.core.model.EmotionType
 import com.kesicollection.core.model.Entry
 import com.kesicollection.core.model.EntryEmotion
+import com.kesicollection.core.model.EntryInfluencer
 import com.kesicollection.core.model.HabitType
 import com.kesicollection.database.api.EntryDb
 import com.kesicollection.database.api.EntryEmotionDb
+import com.kesicollection.database.api.EntryInfluencerDb
 import javax.inject.Inject
 
 interface EntryRepository {
@@ -16,15 +18,17 @@ interface EntryRepository {
         habitId: String?,
         habitType: HabitType?,
         emotionIds: List<String>,
-        emotionType: EmotionType?
+        emotionType: EmotionType?,
+        influencersIds: List<String>?
     )
 
     suspend fun getById(id: String): Entry
 }
 
-class EntryRepositoryImpl @Inject constructor(
+internal class EntryRepositoryImpl @Inject constructor(
     private val entryDb: EntryDb,
     private val entryEmotionDb: EntryEmotionDb,
+    private val entryInfluencerDb: EntryInfluencerDb
 ) : EntryRepository {
     override suspend fun addOrUpdateEntry(entries: List<Entry>) = entryDb.upsertEntries(entries)
 
@@ -35,26 +39,26 @@ class EntryRepositoryImpl @Inject constructor(
         habitId: String?,
         habitType: HabitType?,
         emotionIds: List<String>,
-        emotionType: EmotionType?
+        emotionType: EmotionType?,
+        influencersIds: List<String>?
     ) {
         when {
-            habitType != null ->
+            habitType != null -> {
                 entryDb.updateHabit(entryId, habitId, habitType)
+            }
 
             emotionType != null -> {
                 val allEmotionsByEntry =
                     entryEmotionDb.getEntryEmotionByEntryIdAndType(entryId, emotionType)
+
                 val emotionsSet = emotionIds.toSet()
                 val allEmotionsSet = allEmotionsByEntry.map { it.emotionId }.toSet()
 
-                val removedItems =
-                    allEmotionsByEntry.filterNot { emotionsSet.contains(it.emotionId) }
-                removedItems.forEach {
+                allEmotionsByEntry.filterNot { emotionsSet.contains(it.emotionId) }.forEach {
                     entryEmotionDb.delete(it.id)
                 }
 
-                val addedItems = emotionIds.filterNot { allEmotionsSet.contains(it) }
-                addedItems.forEach {
+                emotionIds.filterNot { allEmotionsSet.contains(it) }.forEach {
                     entryEmotionDb.insert(
                         EntryEmotion(
                             entryId = entryId,
@@ -63,8 +67,26 @@ class EntryRepositoryImpl @Inject constructor(
                         )
                     )
                 }
+            }
 
-                println("Andres: updateHabit removedItems $removedItems addedItems $addedItems")
+            influencersIds != null -> {
+                val allEntryInfluencers = entryInfluencerDb.getEntryInfluencerByEntryId(entryId)
+
+                val influencersSet = influencersIds.toSet()
+                val allEntryInfluencersSet = allEntryInfluencers.map { it.influencerId }.toSet()
+
+                allEntryInfluencers.filterNot { influencersSet.contains(it.influencerId) }.forEach {
+                    entryInfluencerDb.delete(it.id)
+                }
+
+                influencersIds.filterNot { allEntryInfluencersSet.contains(it) }.forEach {
+                    entryInfluencerDb.insert(
+                        EntryInfluencer(
+                            entryId = entryId,
+                            influencerId = it
+                        )
+                    )
+                }
             }
         }
     }

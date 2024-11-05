@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "eb62a219ed891d39eb87f30f8f655bb4",
+    "identityHash": "e013a6b40add1511ec12f2b7de93b681",
     "entities": [
       {
         "tableName": "habits",
@@ -209,8 +209,14 @@
       },
       {
         "tableName": "entries_influencers",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`entry_id` TEXT NOT NULL, `influencer_id` TEXT NOT NULL, PRIMARY KEY(`entry_id`, `influencer_id`), FOREIGN KEY(`entry_id`) REFERENCES `entries`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`influencer_id`) REFERENCES `influencers`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `entry_id` TEXT NOT NULL, `influencer_id` TEXT NOT NULL, FOREIGN KEY(`entry_id`) REFERENCES `entries`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`influencer_id`) REFERENCES `influencers`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
           {
             "fieldPath": "entryId",
             "columnName": "entry_id",
@@ -225,10 +231,9 @@
           }
         ],
         "primaryKey": {
-          "autoGenerate": false,
+          "autoGenerate": true,
           "columnNames": [
-            "entry_id",
-            "influencer_id"
+            "id"
           ]
         },
         "indices": [],
@@ -322,7 +327,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'eb62a219ed891d39eb87f30f8f655bb4')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e013a6b40add1511ec12f2b7de93b681')"
     ]
   }
 }

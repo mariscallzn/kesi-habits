@@ -3,11 +3,15 @@ package com.kesicollection.kesihabits.di
 import com.kesicollection.database.api.EmotionDb
 import com.kesicollection.database.api.EntryDb
 import com.kesicollection.database.api.EntryEmotionDb
+import com.kesicollection.database.api.EntryInfluencerDb
 import com.kesicollection.database.api.HabitDb
+import com.kesicollection.database.api.InfluencerDb
 import com.kesicollection.database.impl.room.api.RoomEmotionDb
 import com.kesicollection.database.impl.room.api.RoomEntryDb
 import com.kesicollection.database.impl.room.api.RoomEntryEmotionDb
+import com.kesicollection.database.impl.room.api.RoomEntryInfluencerDb
 import com.kesicollection.database.impl.room.api.RoomHabitDb
+import com.kesicollection.database.impl.room.api.RoomInfluencerDb
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -36,4 +40,14 @@ abstract class AppModule {
     abstract fun bindsEmotionDb(
         emotionDb: RoomEmotionDb
     ): EmotionDb
+
+    @Binds
+    abstract fun bindsInfluencerDb(
+        influencerDb: RoomInfluencerDb
+    ): InfluencerDb
+
+    @Binds
+    abstract fun bindsEntryInfluencerDb(
+        entryInfluencerDb: RoomEntryInfluencerDb
+    ): EntryInfluencerDb
 }
