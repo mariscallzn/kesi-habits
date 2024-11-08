@@ -1,5 +1,6 @@
 package com.kesicollection.core.designsystem.component
 
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -13,16 +14,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.kesicollection.core.designsystem.R
 import com.kesicollection.core.designsystem.icon.KesiIcons
+import com.kesicollection.core.designsystem.preview.DarkLightPreviews
+import com.kesicollection.core.designsystem.theme.KesiTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommonTopAppBar(
     onBackPress: (() -> Unit)? = null,
-    title: String? = null
+    title: String? = null,
+    modifier: Modifier = Modifier,
+    actions: @Composable (RowScope.() -> Unit) = {},
 ) {
     TopAppBar(title = {
         title?.let {
-            Text(it, style = MaterialTheme.typography.headlineMedium)
+            Text(it, style = MaterialTheme.typography.titleLarge)
         }
     }, navigationIcon = {
         onBackPress?.let {
@@ -34,5 +39,16 @@ fun CommonTopAppBar(
                 )
             }
         }
-    })
+    },
+        actions = actions,
+        modifier = modifier
+    )
+}
+
+@DarkLightPreviews
+@Composable
+private fun CommonTopAppBarPreview() {
+    KesiTheme {
+        CommonTopAppBar({}, "7:38 AM • Nov 5")
+    }
 }

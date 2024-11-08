@@ -10,33 +10,82 @@ import com.kesicollection.core.redux.creator.createAsyncThunk
 import com.kesicollection.core.redux.creator.createStore
 import com.kesicollection.core.redux.creator.reducer
 import com.kesicollection.data.entry.EntryRepository
+import com.kesicollection.feature.addentry.domain.GetDateFromMillis
+import com.kesicollection.feature.addentry.domain.GetDateFromOffsetDateTime
+import com.kesicollection.feature.addentry.domain.GetTimeFromOffsetDateTime
+import com.kesicollection.feature.addentry.domain.GetTimeFromTimePicker
+import com.kesicollection.feature.addentry.domain.GetTimePairFromOffsetDateTime
 import com.kesicollection.feature.addentry.navigation.AddEntry
 import com.kesicollection.feature.addentry.navigation.EntryDraftId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import java.time.OffsetDateTime
-import java.time.ZoneOffset
+import java.time.ZoneId
+import java.util.Locale
 import java.util.UUID
 import javax.inject.Inject
 
 //region Screen Actions
 internal sealed class ScreenActions {
     data object Reset : ScreenActions()
+    data class DefineLocale(val locale: Locale) : ScreenActions()
+    data class ShowTimeDialog(val isShowing: Boolean) : ScreenActions()
+    data class ShowInitialDateTime(val offsetDateTime: OffsetDateTime, val locale: Locale) :
+        ScreenActions()
+
+    data class ShowDateDialog(val isShowing: Boolean) : ScreenActions()
+    data class DateSelected(val millis: Long?, val locale: Locale) : ScreenActions()
+    data class TimeSelected(
+        val hour: Int,
+        val minute: Int, val isAfternoon: Boolean
+    ) :
+        ScreenActions()
 }
 
 //endregion
 @HiltViewModel
 class AddEntryViewModel @Inject constructor(
-    private val entryRepository: EntryRepository
+    private val entryRepository: EntryRepository,
+    private val getDateFromMillis: GetDateFromMillis,
+    private val getTimeFromOffsetDateTime: GetTimeFromOffsetDateTime,
+    private val getTimeFromTimePicker: GetTimeFromTimePicker,
+    private val getDateFromOffsetDateTime: GetDateFromOffsetDateTime,
+    private val getTimePairFromOffsetDateTime: GetTimePairFromOffsetDateTime,
+    private val zoneId: ZoneId
 ) : ViewModel() {
 
     private val store = createStore(
         coroutineScope = viewModelScope,
         initialState = initialState,
-        reducer = reducer<AddEntryUiState, ScreenActions> { _, action ->
+        reducer = reducer<AddEntryUiState, ScreenActions> { state, action ->
             when (action) {
                 is ScreenActions.Reset -> initialState
+                is ScreenActions.DefineLocale -> state.copy(locale = action.locale)
+                is ScreenActions.ShowDateDialog -> state.copy(isDateShowing = action.isShowing)
+                is ScreenActions.ShowTimeDialog -> state.copy(isTimeShowing = action.isShowing)
+                is ScreenActions.DateSelected -> state.copy(
+                    isDateShowing = false,
+                    formattedDate = getDateFromMillis(action.millis, action.locale)
+                )
+
+                is ScreenActions.TimeSelected -> state.copy(
+                    isTimeShowing = false,
+                    time = action.hour to action.minute,
+                    formattedTime = getTimeFromTimePicker(
+                        action.hour,
+                        action.minute,
+                        action.isAfternoon
+                    )
+                )
+
+                is ScreenActions.ShowInitialDateTime -> state.copy(
+                    formattedTime = getTimeFromOffsetDateTime(
+                        action.offsetDateTime,
+                        action.locale
+                    ),
+                    formattedDate = getDateFromOffsetDateTime(action.offsetDateTime, action.locale)
+                )
             }
         }
     )
@@ -64,16 +113,21 @@ class AddEntryViewModel @Inject constructor(
                     triggerHabit = it.triggeredBy,
                     currentEmotions = it.currentEmotions ?: emptyList(),
                     desireEmotions = it.desiredEmotions ?: emptyList(),
-                    influencers = it.influencers ?: emptyList()
+                    influencers = it.influencers ?: emptyList(),
+                    formattedDate = getDateFromOffsetDateTime(it.recordedOn, s.locale),
+                    formattedTime = getTimeFromOffsetDateTime(it.recordedOn, s.locale),
+                    time = getTimePairFromOffsetDateTime(it.recordedOn)
                 )
             } ?: s
         }
         store.builder.addCase(rejected) { s, _ -> s }
     }
 
-    val createDraft = createAsyncThunk<EntryDraftId, Unit>("draft") { _, _ ->
+    val createDraft = createAsyncThunk<EntryDraftId, Locale>("draft") { args, options ->
         val draftId = "${UUID.randomUUID()}"
-        entryRepository.add(Entry(draftId, OffsetDateTime.now(ZoneOffset.UTC), Status.DRAFT))
+        val dateTime = OffsetDateTime.now(zoneId)
+        options.dispatch(ScreenActions.ShowInitialDateTime(dateTime, args))
+        entryRepository.add(Entry(draftId, dateTime, Status.DRAFT))
         draftId
     }.apply {
         store.builder.addCase(fulfilled) { state, action ->

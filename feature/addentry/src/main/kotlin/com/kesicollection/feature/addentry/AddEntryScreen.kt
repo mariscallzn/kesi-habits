@@ -9,14 +9,21 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -25,14 +32,25 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimeInput
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerState
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kesicollection.core.designsystem.component.CommonTopAppBar
@@ -71,10 +89,22 @@ fun AddEntryScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    val locales = LocalConfiguration.current.locales
+    LaunchedEffect(locales[0]) {
+        viewModel.dispatch(ScreenActions.DefineLocale(locales[0]))
+    }
+
     LaunchedEffect(Unit) {
         scaffoldDefinitionState.defineFabComposable(null)
         scaffoldDefinitionState.defineAppBarComposable {
-            CommonTopAppBar(onBackPress, stringResource(R.string.add_entry_screen))
+            CommonTopAppBar(onBackPress, "${uiState.formattedTime} • ${uiState.formattedDate}") {
+                IconButton({ viewModel.dispatch(ScreenActions.ShowTimeDialog(true)) }) {
+                    Icon(KesiIcons.Time, "")
+                }
+                IconButton({ viewModel.dispatch(ScreenActions.ShowDateDialog(true)) }) {
+                    Icon(KesiIcons.Date, "")
+                }
+            }
         }
     }
 
@@ -83,7 +113,7 @@ fun AddEntryScreen(
             addEntry.draftId.isNullOrBlank() &&
                     addEntry.habitId.isNullOrBlank() &&
                     addEntry.emotionIds.isEmpty() -> viewModel.dispatch(
-                viewModel.createDraft(Unit)
+                viewModel.createDraft(locales[0])
             )
 
             addEntry.draftId?.isNotBlank() == true -> viewModel.dispatch(
@@ -95,28 +125,96 @@ fun AddEntryScreen(
     }
 
     AddEntryScreen(
-        onAddHabitClick,
-        onAddEmotionClick,
-        onAddInfluencerClick,
+        onAddHabitClick = onAddHabitClick,
+        onAddEmotionClick = onAddEmotionClick,
+        onAddInfluencerClick = onAddInfluencerClick,
         onClearClick = { draftId, habitType ->
             viewModel.dispatch(
-                viewModel.updateHabit(AddEntry(draftId = draftId, habitType = habitType))
+                viewModel.updateHabit(
+                    AddEntry(
+                        draftId = draftId,
+                        habitType = habitType
+                    )
+                )
             )
         },
-        uiState,
-        modifier
+        onDismissDateDialog = { viewModel.dispatch(ScreenActions.ShowDateDialog(false)) },
+        onDismissTimeDialog = { viewModel.dispatch(ScreenActions.ShowTimeDialog(false)) },
+        onDateSelected = { millis ->
+            viewModel.dispatch(
+                ScreenActions.DateSelected(
+                    millis,
+                    locales[0]
+                )
+            )
+        },
+        onTimeSelected = { hour, minute, isAfternoon ->
+            viewModel.dispatch(
+                ScreenActions.TimeSelected(
+                    hour,
+                    minute,
+                    isAfternoon
+                )
+            )
+        },
+        uiState = uiState,
+        modifier = modifier
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEntryScreen(
     onAddHabitClick: (EntryDraftId, HabitType) -> Unit,
     onAddEmotionClick: (EntryDraftId, List<EmotionIds>, EmotionType) -> Unit,
     onAddInfluencerClick: (EntryDraftId, List<InfluencersIds>) -> Unit,
     onClearClick: (EntryDraftId, HabitType) -> Unit,
+    onDismissDateDialog: () -> Unit,
+    onDismissTimeDialog: () -> Unit,
+    onDateSelected: (Long?) -> Unit,
+    onTimeSelected: (Int, Int, Boolean) -> Unit,
     uiState: AddEntryUiState,
     modifier: Modifier = Modifier
 ) {
+
+    val dateDialogState = rememberDatePickerState()
+    val timePickerState = rememberTimePickerState()
+
+    LaunchedEffect(uiState.time) {
+        timePickerState.hour = uiState.time.first
+        timePickerState.minute = uiState.time.second
+    }
+
+    if (uiState.isTimeShowing) {
+        TimePickerSwitchable(
+            state = timePickerState,
+            onCancel = onDismissTimeDialog,
+            onConfirm = {
+                onTimeSelected(
+                    timePickerState.hour,
+                    timePickerState.minute,
+                    timePickerState.isAfternoon
+                )
+            }
+        )
+    }
+    if (uiState.isDateShowing) {
+        DatePickerDialog(
+            onDismissRequest = onDismissDateDialog,
+            confirmButton = {
+                TextButton({ onDateSelected(dateDialogState.selectedDateMillis) }) {
+                    Text("Select")
+                }
+            },
+            dismissButton = {
+                TextButton(onDismissDateDialog) {
+                    Text("Dismiss")
+                }
+            }
+        ) {
+            DatePicker(dateDialogState)
+        }
+    }
 
     Column(
         modifier = modifier
@@ -125,10 +223,6 @@ fun AddEntryScreen(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-
-        InfoContainer({}) {
-            Text("Nov 5 • 7:38 AM")
-        }
 
         Text(
             text = stringResource(R.string.select_habit),
@@ -491,6 +585,95 @@ fun DashedButton(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TimePickerSwitchable(
+    state: TimePickerState,
+    onCancel: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    val configuration = LocalConfiguration.current
+    val showingPicker = remember { mutableStateOf(true) }
+    TimePickerDialog(onCancel = onCancel, onConfirm = onConfirm, toggle = {
+        if (configuration.screenHeightDp > 400) {
+            IconButton(onClick = { showingPicker.value = !showingPicker.value }) {
+                val icon = if (showingPicker.value) {
+                    KesiIcons.Keyboard
+                } else {
+                    KesiIcons.Schedule
+                }
+                Icon(
+                    icon,
+                    contentDescription =
+                    if (showingPicker.value) {
+                        "Switch to Text Input"
+                    } else {
+                        "Switch to Touch Input"
+                    }
+                )
+            }
+        }
+    }) {
+        if (showingPicker.value && configuration.screenHeightDp > 400) {
+            TimePicker(state = state)
+        } else {
+            TimeInput(state = state)
+        }
+    }
+
+}
+
+@Composable
+fun TimePickerDialog(
+    title: String = "Select Time",
+    onCancel: () -> Unit,
+    onConfirm: () -> Unit,
+    toggle: @Composable () -> Unit = {},
+    content: @Composable () -> Unit,
+) {
+    Dialog(
+        onDismissRequest = onCancel,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        Surface(
+            shape = MaterialTheme.shapes.extraLarge,
+            tonalElevation = 6.dp,
+            modifier =
+            Modifier
+                .width(IntrinsicSize.Min)
+                .height(IntrinsicSize.Min)
+                .background(
+                    shape = MaterialTheme.shapes.extraLarge,
+                    color = MaterialTheme.colorScheme.surface
+                ),
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 20.dp),
+                    text = title,
+                    style = MaterialTheme.typography.labelMedium
+                )
+                content()
+                Row(
+                    modifier = Modifier
+                        .height(40.dp)
+                        .fillMaxWidth()
+                ) {
+                    toggle()
+                    Spacer(modifier = Modifier.weight(1f))
+                    TextButton(onClick = onCancel) { Text("Cancel") }
+                    TextButton(onClick = onConfirm) { Text("OK") }
+                }
+            }
+        }
+    }
+}
+
 @DarkLightPreviews
 @Composable
 private fun AddEntryScreenPreview() {
@@ -500,6 +683,10 @@ private fun AddEntryScreenPreview() {
             onAddHabitClick = { _, _ -> },
             onAddInfluencerClick = { _, _ -> },
             onClearClick = { _, _ -> },
+            onDismissDateDialog = {},
+            onDateSelected = {},
+            onDismissTimeDialog = {},
+            onTimeSelected = { _, _, _ -> },
             uiState = initialState.copy(
                 currentEmotions = listOf(
                     Emotion("", "Happy", Valence.POSITIVE, Arousal.MODERATE, Status.ACTIVE),

@@ -14,8 +14,11 @@ import com.kesicollection.database.impl.room.api.RoomHabitDb
 import com.kesicollection.database.impl.room.api.RoomInfluencerDb
 import dagger.Binds
 import dagger.Module
+import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import java.time.ZoneId
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -50,4 +53,12 @@ abstract class AppModule {
     abstract fun bindsEntryInfluencerDb(
         entryInfluencerDb: RoomEntryInfluencerDb
     ): EntryInfluencerDb
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+object TimeZoneModule {
+    @Provides
+    @Singleton
+    fun providesZoneId(): ZoneId = ZoneId.systemDefault()
 }

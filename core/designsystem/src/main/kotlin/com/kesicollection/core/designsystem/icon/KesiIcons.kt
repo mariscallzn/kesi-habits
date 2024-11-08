@@ -2,8 +2,12 @@ package com.kesicollection.core.designsystem.icon
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.outlined.Keyboard
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.rounded.Add
 
 object KesiIcons {
@@ -11,4 +15,8 @@ object KesiIcons {
     val ArrowBack = Icons.AutoMirrored.Rounded.ArrowBack
     val Cancel = Icons.Filled.Cancel
     val Check = Icons.Filled.Check
+    val Time = Icons.Filled.AccessTime
+    val Date = Icons.Filled.DateRange
+    val Keyboard = Icons.Outlined.Keyboard
+    val Schedule = Icons.Outlined.Schedule
 }
