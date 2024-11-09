@@ -14,4 +14,7 @@ interface HabitDao : BaseDao<HabitEntity> {
     """
     )
     suspend fun findById(id: String): HabitEntity
+
+    @Query("SELECT * FROM habits")
+    suspend fun getAll(): List<HabitEntity>
 }

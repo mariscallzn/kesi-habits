@@ -14,6 +14,6 @@ class RoomHabitDb @Inject constructor(
         dao.upsertAll(habits.map { it.toEntity() })
 
     override suspend fun insert(habit: Habit) = dao.insert(habit.toEntity())
-
     override suspend fun findById(id: String): Habit = dao.findById(id).toHabit()
+    override suspend fun getAll(): List<Habit> = dao.getAll().map { it.toHabit() }
 }

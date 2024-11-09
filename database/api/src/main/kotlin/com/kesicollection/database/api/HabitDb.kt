@@ -6,4 +6,5 @@ interface HabitDb {
     suspend fun upsertHabits(habits: List<Habit>)
     suspend fun insert(habit: Habit): Long
     suspend fun findById(id: String): Habit
+    suspend fun getAll(): List<Habit>
 }

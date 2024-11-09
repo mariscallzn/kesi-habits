@@ -8,6 +8,7 @@ import javax.inject.Inject
 interface HabitRepository {
     suspend fun addOrUpdateHabits(habits: List<Habit>)
     suspend fun add(habit: Habit): Long
+    suspend fun fetch(): List<Habit>
 }
 
 internal class HabitRepositoryImpl @Inject constructor(
@@ -18,4 +19,6 @@ internal class HabitRepositoryImpl @Inject constructor(
     })
 
     override suspend fun add(habit: Habit) = habitDb.insert(habit)
+
+    override suspend fun fetch(): List<Habit> = habitDb.getAll()
 }

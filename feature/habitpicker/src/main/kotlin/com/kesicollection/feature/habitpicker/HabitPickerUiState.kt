@@ -1,5 +1,12 @@
 package com.kesicollection.feature.habitpicker
 
-data class HabitPickerUiState(val todo: Int)
+import com.kesicollection.core.model.Habit
 
-val initialState = HabitPickerUiState(0)
+data class HabitPickerUiState(
+    val displayedHabits: List<Habit> = emptyList(),
+    val cacheHabits: List<Habit> = emptyList(),
+    val selectedHabitId: String? = null,
+    val isEditing: Boolean = false,
+)
+
+val initialState = HabitPickerUiState()

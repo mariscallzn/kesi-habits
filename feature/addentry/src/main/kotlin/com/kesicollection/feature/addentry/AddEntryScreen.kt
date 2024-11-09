@@ -1,6 +1,5 @@
 package com.kesicollection.feature.addentry
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -60,7 +59,6 @@ import com.kesicollection.core.designsystem.icon.KesiIcons
 import com.kesicollection.core.designsystem.preview.DarkLightPreviews
 import com.kesicollection.core.designsystem.state.ScaffoldDefinitionState
 import com.kesicollection.core.designsystem.theme.KesiTheme
-import com.kesicollection.core.designsystem.utils.TAG
 import com.kesicollection.core.model.Arousal
 import com.kesicollection.core.model.Classification
 import com.kesicollection.core.model.Emotion
@@ -73,6 +71,7 @@ import com.kesicollection.core.model.Valence
 import com.kesicollection.feature.addentry.navigation.AddEntry
 import com.kesicollection.feature.addentry.navigation.EmotionIds
 import com.kesicollection.feature.addentry.navigation.EntryDraftId
+import com.kesicollection.feature.addentry.navigation.HabitId
 import com.kesicollection.feature.addentry.navigation.InfluencersIds
 import com.kesicollection.feature.addentry.utils.ClassificationBoxColor
 
@@ -81,7 +80,7 @@ fun AddEntryScreen(
     scaffoldDefinitionState: ScaffoldDefinitionState,
     onBackPress: () -> Unit,
     addEntry: AddEntry,
-    onAddHabitClick: (EntryDraftId, HabitType) -> Unit,
+    onAddHabitClick: (EntryDraftId, HabitId?, HabitType) -> Unit,
     onAddEmotionClick: (EntryDraftId, List<EmotionIds>, EmotionType) -> Unit,
     onAddInfluencerClick: (EntryDraftId, List<InfluencersIds>) -> Unit,
     modifier: Modifier = Modifier,
@@ -165,7 +164,7 @@ fun AddEntryScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEntryScreen(
-    onAddHabitClick: (EntryDraftId, HabitType) -> Unit,
+    onAddHabitClick: (EntryDraftId, HabitId?, HabitType) -> Unit,
     onAddEmotionClick: (EntryDraftId, List<EmotionIds>, EmotionType) -> Unit,
     onAddInfluencerClick: (EntryDraftId, List<InfluencersIds>) -> Unit,
     onClearClick: (EntryDraftId, HabitType) -> Unit,
@@ -240,7 +239,8 @@ fun AddEntryScreen(
         ) {
             onAddHabitClick(
                 uiState.draftId,
-                HabitType.CORE
+                null,
+                HabitType.CORE,
             )
         }
 
@@ -260,6 +260,7 @@ fun AddEntryScreen(
         ) {
             onAddHabitClick(
                 uiState.draftId,
+                null,
                 HabitType.TRIGGER
             )
         }
@@ -311,7 +312,7 @@ fun AddEntryScreen(
 @Composable
 fun HabitCard(
     draftEntryId: EntryDraftId,
-    onAddHabitClick: (EntryDraftId, HabitType) -> Unit,
+    onAddHabitClick: (EntryDraftId, HabitId, HabitType) -> Unit,
     onClearClick: (EntryDraftId, HabitType) -> Unit,
     habit: Habit,
     habitType: HabitType,
@@ -348,8 +349,7 @@ fun HabitCard(
             shape = RoundedCornerShape(MaterialTheme.shapes.small.topStart),
             modifier = modifier
                 .clickable {
-                    Log.d(TAG, "HabitSection: draftId $draftEntryId")
-                    onAddHabitClick(draftEntryId, habitType)
+                    onAddHabitClick(draftEntryId, habit.id, habitType)
                 }
                 .weight(1f)
         ) {
@@ -680,7 +680,7 @@ private fun AddEntryScreenPreview() {
     KesiTheme {
         AddEntryScreen(
             onAddEmotionClick = { _, _, _ -> },
-            onAddHabitClick = { _, _ -> },
+            onAddHabitClick = { _, _, _ -> },
             onAddInfluencerClick = { _, _ -> },
             onClearClick = { _, _ -> },
             onDismissDateDialog = {},

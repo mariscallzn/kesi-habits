@@ -46,9 +46,9 @@ fun KhNavHost(
         addEntryScreen(
             scaffoldDefinitionState = scaffoldDefinitionState,
             onBackPressed = navController::popBackStack,
-            onAddHabitClick = { entryDraftId, type ->
+            onAddHabitClick = { entryDraftId, habitId,type ->
                 navController.navigateToHabitPicker(
-                    HabitPicker(type, entryDraftId)
+                    HabitPicker(type, entryDraftId, habitId)
                 )
             },
             onAddEmotionClick = { entryDraftId, emotionIds, type ->
@@ -68,6 +68,10 @@ fun KhNavHost(
                 navController.navigateToCreateHabit(
                     CreateHabit(type, entryDraftId)
                 )
+            },
+            onHabitSelected = {entryDraftId,habitId,type ->
+                navController.popBackStack<AddEntry>(true)
+                navController.navigateToAddEntry(AddEntry(entryDraftId, habitId, type))
             },
             modifier = modifier,
         )

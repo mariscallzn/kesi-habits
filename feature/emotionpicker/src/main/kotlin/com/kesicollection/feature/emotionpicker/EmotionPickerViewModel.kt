@@ -64,7 +64,8 @@ class EmotionPickerViewModel @Inject constructor(
 
                 is ScreenActions.SelectItems -> state.copy(
                     isEditing = true,
-                    selectedItems = state.selectedItems + action.ids.toSet())
+                    selectedItems = state.selectedItems + action.ids.toSet()
+                )
             }
         }
     )
@@ -82,13 +83,17 @@ class EmotionPickerViewModel @Inject constructor(
     }
 
     private fun filter(state: EmotionPickerUiState, term: String): EmotionPickerUiState {
-        val filtered = state.cacheEmotions.filter { it.name.contains(term, ignoreCase = true) }
-        return if (term.isNotBlank()) state.copy(displayedEmotions = filtered) else
+        return if (term.isNotBlank()) state.copy(displayedEmotions = state.cacheEmotions.filter {
+            it.name.contains(
+                term,
+                ignoreCase = true
+            )
+        }) else
             state.copy(displayedEmotions = state.cacheEmotions)
     }
 
     //region Async Thunks
-    val loadEmotions = createAsyncThunk<List<Emotion>, Unit>("") { _, _ ->
+    val loadEmotions = createAsyncThunk<List<Emotion>, Unit>("load-emotions") { _, _ ->
         emotionRepository.fetch()
     }.apply {
         store.builder.addCase(fulfilled) { s, a ->

@@ -23,6 +23,7 @@ data class AddEntry(
 )
 
 internal typealias EntryDraftId = String
+internal typealias HabitId = String
 internal typealias EmotionIds = String
 internal typealias InfluencersIds = String
 
@@ -32,7 +33,7 @@ fun NavController.navigateToAddEntry(addEntry: AddEntry, navOptions: NavOptions?
 fun NavGraphBuilder.addEntryScreen(
     scaffoldDefinitionState: ScaffoldDefinitionState,
     onBackPressed: () -> Unit,
-    onAddHabitClick: (EntryDraftId, HabitType) -> Unit,
+    onAddHabitClick: (EntryDraftId, HabitId? ,HabitType) -> Unit,
     onAddEmotionClick: (EntryDraftId, List<EmotionIds>, EmotionType) -> Unit,
     onAddInfluencerClick: (EntryDraftId, List<InfluencersIds>) -> Unit,
     modifier: Modifier = Modifier
