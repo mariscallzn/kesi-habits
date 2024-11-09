@@ -19,7 +19,7 @@ data class AddEntry(
     val habitType: HabitType? = null,
     val emotionIds: List<String> = emptyList(),
     val emotionType: EmotionType? = null,
-    val influencerIds: List<String>? = null
+    val influencerIds: List<String> = emptyList()
 )
 
 internal typealias EntryDraftId = String
