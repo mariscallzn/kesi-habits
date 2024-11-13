@@ -7,7 +7,6 @@ import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.kesicollection.core.designsystem.state.ScaffoldDefinitionState
-import com.kesicollection.core.model.EmotionType
 import com.kesicollection.core.model.HabitType
 import com.kesicollection.feature.addentry.AddEntryScreen
 import kotlinx.serialization.Serializable
@@ -17,8 +16,6 @@ data class AddEntry(
     val draftId: String? = null,
     val habitId: String? = null,
     val habitType: HabitType? = null,
-    val emotionIds: List<String> = emptyList(),
-    val emotionType: EmotionType? = null,
     val influencerIds: List<String> = emptyList()
 )
 
@@ -36,7 +33,6 @@ fun NavGraphBuilder.addEntryScreen(
     onBackPressed: () -> Unit,
     onEntryCreated: (RecordedOn) -> Unit,
     onAddHabitClick: (EntryDraftId, HabitId? ,HabitType) -> Unit,
-    onAddEmotionClick: (EntryDraftId, List<EmotionIds>, EmotionType) -> Unit,
     onAddInfluencerClick: (EntryDraftId, List<InfluencersIds>) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -48,7 +44,6 @@ fun NavGraphBuilder.addEntryScreen(
             addEntry = addEntry,
             onEntryCreated = onEntryCreated,
             onAddHabitClick = onAddHabitClick,
-            onAddEmotionClick = onAddEmotionClick,
             onAddInfluencerClick = onAddInfluencerClick,
             modifier = modifier
         )

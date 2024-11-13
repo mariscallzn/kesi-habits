@@ -30,7 +30,6 @@
             <option value="$PROJECT_DIR$/core/model" />
             <option value="$PROJECT_DIR$/core/redux" />
             <option value="$PROJECT_DIR$/data" />
-            <option value="$PROJECT_DIR$/data/emotion" />
             <option value="$PROJECT_DIR$/data/entry" />
             <option value="$PROJECT_DIR$/data/habit" />
             <option value="$PROJECT_DIR$/data/influencer" />
@@ -44,10 +43,8 @@
             <option value="$PROJECT_DIR$/domain/weeklyhabits" />
             <option value="$PROJECT_DIR$/feature" />
             <option value="$PROJECT_DIR$/feature/addentry" />
-            <option value="$PROJECT_DIR$/feature/createemotion" />
             <option value="$PROJECT_DIR$/feature/createhabit" />
             <option value="$PROJECT_DIR$/feature/createinfluencer" />
-            <option value="$PROJECT_DIR$/feature/emotionpicker" />
             <option value="$PROJECT_DIR$/feature/habitpicker" />
             <option value="$PROJECT_DIR$/feature/influencerpicker" />
             <option value="$PROJECT_DIR$/feature/weeklyhabits" />

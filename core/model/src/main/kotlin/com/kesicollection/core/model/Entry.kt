@@ -9,6 +9,5 @@ data class Entry(
     val habit: Habit? = null,
     val triggeredBy: Habit? = null,
     val influencers: List<Influencer>? = null,
-    val currentEmotions: List<Emotion>? = null,
-    val desiredEmotions: List<Emotion>? = null
+    val humanNeeds: List<HumanNeed>? = null
 )

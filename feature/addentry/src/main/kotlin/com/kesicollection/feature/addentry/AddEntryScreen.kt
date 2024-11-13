@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -46,7 +45,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -59,19 +57,13 @@ import com.kesicollection.core.designsystem.icon.KesiIcons
 import com.kesicollection.core.designsystem.preview.DarkLightPreviews
 import com.kesicollection.core.designsystem.state.ScaffoldDefinitionState
 import com.kesicollection.core.designsystem.theme.KesiTheme
-import com.kesicollection.core.model.Arousal
 import com.kesicollection.core.model.Classification
-import com.kesicollection.core.model.Emotion
-import com.kesicollection.core.model.EmotionType
 import com.kesicollection.core.model.Habit
 import com.kesicollection.core.model.HabitType
 import com.kesicollection.core.model.Influencer
-import com.kesicollection.core.model.Status
-import com.kesicollection.core.model.Valence
 import com.kesicollection.feature.addentry.model.CreateDraftThunk
 import com.kesicollection.feature.addentry.model.UpdateTimeThunk
 import com.kesicollection.feature.addentry.navigation.AddEntry
-import com.kesicollection.feature.addentry.navigation.EmotionIds
 import com.kesicollection.feature.addentry.navigation.EntryDraftId
 import com.kesicollection.feature.addentry.navigation.HabitId
 import com.kesicollection.feature.addentry.navigation.InfluencersIds
@@ -87,7 +79,6 @@ fun AddEntryScreen(
     addEntry: AddEntry,
     onEntryCreated: (RecordedOn) -> Unit,
     onAddHabitClick: (EntryDraftId, HabitId?, HabitType) -> Unit,
-    onAddEmotionClick: (EntryDraftId, List<EmotionIds>, EmotionType) -> Unit,
     onAddInfluencerClick: (EntryDraftId, List<InfluencersIds>) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: AddEntryViewModel = hiltViewModel()
@@ -116,8 +107,7 @@ fun AddEntryScreen(
     LaunchedEffect(addEntry) {
         when {
             addEntry.draftId.isNullOrBlank() &&
-                    addEntry.habitId.isNullOrBlank() &&
-                    addEntry.emotionIds.isEmpty() -> viewModel.dispatch(
+                    addEntry.habitId.isNullOrBlank() -> viewModel.dispatch(
                 viewModel.createDraft(
                     CreateDraftThunk(
                         OffsetDateTime.now(ZoneOffset.UTC),
@@ -141,7 +131,6 @@ fun AddEntryScreen(
     AddEntryScreen(
         onAddEntry = { viewModel.dispatch(viewModel.draftFinished(Unit)) },
         onAddHabitClick = onAddHabitClick,
-        onAddEmotionClick = onAddEmotionClick,
         onAddInfluencerClick = onAddInfluencerClick,
         onClearClick = { draftId, habitType ->
             viewModel.dispatch(
@@ -184,7 +173,6 @@ fun AddEntryScreen(
 fun AddEntryScreen(
     onAddEntry: () -> Unit,
     onAddHabitClick: (EntryDraftId, HabitId?, HabitType) -> Unit,
-    onAddEmotionClick: (EntryDraftId, List<EmotionIds>, EmotionType) -> Unit,
     onAddInfluencerClick: (EntryDraftId, List<InfluencersIds>) -> Unit,
     onClearClick: (EntryDraftId, HabitType) -> Unit,
     onDismissDateDialog: () -> Unit,
@@ -300,25 +288,6 @@ fun AddEntryScreen(
                 onAddInfluencerClick(uiState.draftId, emptyList())
             }
         }
-
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(24.dp),
-            modifier = Modifier
-                .fillMaxWidth(),
-        ) {
-            CurrentEmotionsSection(
-                uiState.draftId,
-                onAddEmotionClick,
-                uiState.currentEmotions,
-                modifier = Modifier.weight(1f)
-            )
-            DesireEmotionsSection(
-                uiState.draftId,
-                onAddEmotionClick,
-                uiState.desireEmotions,
-                modifier = Modifier.weight(1f)
-            )
-        }
         CreationButton(
             enabled = uiState.isSaveEnabled,
             onClick = onAddEntry,
@@ -408,19 +377,6 @@ fun HabitCard(
 }
 
 @Composable
-fun EmotionCard(
-    onClick: () -> Unit,
-    emotions: List<Emotion>,
-    modifier: Modifier = Modifier
-) {
-    InfoContainer(onClick, modifier = modifier) {
-        emotions.map {
-            EmotionItem(it, onClick)
-        }
-    }
-}
-
-@Composable
 fun InfluencerCard(
     influencer: List<Influencer>,
     onContainerClick: () -> Unit,
@@ -461,118 +417,6 @@ fun InfoContainer(
             horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
             modifier = Modifier.padding(horizontal = 16.dp)
         ) { content() }
-    }
-}
-
-@Composable
-fun EmotionItem(
-    emotion: Emotion,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val selectedColor = when (emotion.valence) {
-        Valence.NEGATIVE -> FilterChipDefaults.filterChipColors().copy(
-            selectedLabelColor = MaterialTheme.colorScheme.onErrorContainer,
-            selectedContainerColor = MaterialTheme.colorScheme.errorContainer,
-        )
-
-        Valence.NEUTRAL -> FilterChipDefaults.filterChipColors().copy(
-            selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
-            selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-        )
-
-        Valence.POSITIVE -> FilterChipDefaults.filterChipColors().copy(
-            selectedLabelColor = MaterialTheme.colorScheme.onTertiaryContainer,
-            selectedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
-        )
-    }
-    FilterChip(
-        selected = true, onClick = onClick, label = {
-            Text(emotion.name, style = MaterialTheme.typography.bodyLarge)
-        },
-        modifier = modifier,
-        colors = selectedColor,
-        shape = RoundedCornerShape(MaterialTheme.shapes.large.topStart)
-    )
-}
-
-@Composable
-fun CurrentEmotionsSection(
-    draftEntryId: EntryDraftId,
-    onAddEmotionClick: (EntryDraftId, List<EmotionIds>, EmotionType) -> Unit,
-    emotions: List<Emotion>,
-    modifier: Modifier = Modifier
-) {
-    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = "Current feelings",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-        if (emotions.isEmpty())
-            DashedButton(
-                "",
-                Modifier
-                    .fillMaxWidth()
-                    .heightIn(250.dp, Dp.Infinity)
-            ) {
-                onAddEmotionClick(
-                    draftEntryId,
-                    emptyList(),
-                    EmotionType.CURRENT
-                )
-            } else EmotionCard(
-            {
-                onAddEmotionClick(
-                    draftEntryId,
-                    emotions.map { it.id },
-                    EmotionType.CURRENT
-                )
-            },
-            emotions,
-            Modifier
-                .fillMaxWidth()
-        )
-    }
-}
-
-@Composable
-fun DesireEmotionsSection(
-    draftEntryId: EntryDraftId,
-    onAddEmotionClick: (EntryDraftId, List<EmotionIds>, EmotionType) -> Unit,
-    emotions: List<Emotion>,
-    modifier: Modifier = Modifier
-) {
-    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = "Desire feelings",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-        if (emotions.isEmpty())
-            DashedButton(
-                "",
-                Modifier
-                    .fillMaxWidth()
-                    .heightIn(250.dp, Dp.Infinity)
-            ) {
-                onAddEmotionClick(
-                    draftEntryId,
-                    emptyList(),
-                    EmotionType.DESIRE
-                )
-            } else EmotionCard(
-            {
-                onAddEmotionClick(
-                    draftEntryId,
-                    emotions.map { it.id },
-                    EmotionType.DESIRE
-                )
-            },
-            emotions,
-            Modifier
-                .fillMaxWidth()
-        )
     }
 }
 
@@ -699,7 +543,6 @@ private fun AddEntryScreenPreview() {
     KesiTheme {
         AddEntryScreen(
             onAddEntry = {},
-            onAddEmotionClick = { _, _, _ -> },
             onAddHabitClick = { _, _, _ -> },
             onAddInfluencerClick = { _, _ -> },
             onClearClick = { _, _ -> },
@@ -707,13 +550,7 @@ private fun AddEntryScreenPreview() {
             onDateSelected = {},
             onDismissTimeDialog = {},
             onTimeSelected = { _, _, _ -> },
-            uiState = initialState.copy(
-                currentEmotions = listOf(
-                    Emotion("", "Happy", Valence.POSITIVE, Arousal.MODERATE, Status.ACTIVE),
-                    Emotion("", "Serene", Valence.NEUTRAL, Arousal.MODERATE, Status.ACTIVE),
-                    Emotion("", "Sad", Valence.NEGATIVE, Arousal.MODERATE, Status.ACTIVE),
-                )
-            )
+            uiState = initialState
         )
     }
 }

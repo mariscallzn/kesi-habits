@@ -118,8 +118,6 @@ class AddEntryViewModel @Inject constructor(
                     draftId = it.id,
                     coreHabit = it.habit,
                     triggerHabit = it.triggeredBy,
-                    currentEmotions = it.currentEmotions ?: emptyList(),
-                    desireEmotions = it.desiredEmotions ?: emptyList(),
                     influencers = it.influencers ?: emptyList(),
                     formattedDate = getDateFromOffsetDateTime(it.recordedOn, s.locale),
                     formattedTime = getTimeFromOffsetDateTime(it.recordedOn, s.locale),
@@ -176,8 +174,6 @@ class AddEntryViewModel @Inject constructor(
                     entryId = args.draftId,
                     habitId = args.habitId,
                     habitType = args.habitType,
-                    emotionIds = args.emotionIds,
-                    emotionType = args.emotionType,
                     influencersIds = args.influencerIds
                 )
                 options.dispatch(loadDraft(args.draftId))

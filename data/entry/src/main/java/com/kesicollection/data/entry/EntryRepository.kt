@@ -1,13 +1,10 @@
 package com.kesicollection.data.entry
 
-import com.kesicollection.core.model.EmotionType
 import com.kesicollection.core.model.Entry
-import com.kesicollection.core.model.EntryEmotion
 import com.kesicollection.core.model.EntryInfluencer
 import com.kesicollection.core.model.HabitType
 import com.kesicollection.core.model.Status
 import com.kesicollection.database.api.EntryDb
-import com.kesicollection.database.api.EntryEmotionDb
 import com.kesicollection.database.api.EntryInfluencerDb
 import com.kesicollection.domain.datetime.UpdateOffsetDateTimeWithMillis
 import com.kesicollection.domain.datetime.UpdateOffsetDateTimeWithTimePicker
@@ -20,8 +17,6 @@ interface EntryRepository {
         entryId: String,
         habitId: String?,
         habitType: HabitType?,
-        emotionIds: List<String>,
-        emotionType: EmotionType?,
         influencersIds: List<String>?
     )
 
@@ -36,7 +31,6 @@ interface EntryRepository {
 
 internal class EntryRepositoryImpl @Inject constructor(
     private val entryDb: EntryDb,
-    private val entryEmotionDb: EntryEmotionDb,
     private val entryInfluencerDb: EntryInfluencerDb,
     private val updateOffsetDateTimeWithMillis: UpdateOffsetDateTimeWithMillis,
     private val updateOffsetDateTimeWithTimePicker: UpdateOffsetDateTimeWithTimePicker,
@@ -49,35 +43,11 @@ internal class EntryRepositoryImpl @Inject constructor(
         entryId: String,
         habitId: String?,
         habitType: HabitType?,
-        emotionIds: List<String>,
-        emotionType: EmotionType?,
         influencersIds: List<String>?
     ) {
         when {
             habitType != null -> {
                 entryDb.updateHabit(entryId, habitId, habitType)
-            }
-
-            emotionType != null -> {
-                val allEmotionsByEntry =
-                    entryEmotionDb.getEntryEmotionByEntryIdAndType(entryId, emotionType)
-
-                val emotionsSet = emotionIds.toSet()
-                val allEmotionsSet = allEmotionsByEntry.map { it.emotionId }.toSet()
-
-                allEmotionsByEntry.filterNot { emotionsSet.contains(it.emotionId) }.forEach {
-                    entryEmotionDb.delete(it.id)
-                }
-
-                emotionIds.filterNot { allEmotionsSet.contains(it) }.forEach {
-                    entryEmotionDb.insert(
-                        EntryEmotion(
-                            entryId = entryId,
-                            emotionId = it,
-                            emotionType = emotionType
-                        )
-                    )
-                }
             }
 
             influencersIds != null -> {

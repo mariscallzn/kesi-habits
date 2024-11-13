@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "e013a6b40add1511ec12f2b7de93b681",
+    "identityHash": "84cb5656c4d1d3bed833d1dd718f9ed9",
     "entities": [
       {
         "tableName": "habits",
@@ -120,56 +120,6 @@
         ]
       },
       {
-        "tableName": "emotions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `valence` TEXT NOT NULL, `arousal` TEXT NOT NULL, `status` TEXT NOT NULL, `i_18_key` TEXT, PRIMARY KEY(`id`))",
-        "fields": [
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "name",
-            "columnName": "name",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "valence",
-            "columnName": "valence",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "arousal",
-            "columnName": "arousal",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "status",
-            "columnName": "status",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "i18Key",
-            "columnName": "i_18_key",
-            "affinity": "TEXT",
-            "notNull": false
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": false,
-          "columnNames": [
-            "id"
-          ]
-        },
-        "indices": [],
-        "foreignKeys": []
-      },
-      {
         "tableName": "influencers",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `status` TEXT NOT NULL, `i_18_key` TEXT, PRIMARY KEY(`id`))",
         "fields": [
@@ -263,8 +213,40 @@
         ]
       },
       {
-        "tableName": "entries_emotions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `entry_id` TEXT NOT NULL, `emotion_id` TEXT NOT NULL, `emotion_type` TEXT NOT NULL, FOREIGN KEY(`entry_id`) REFERENCES `entries`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`emotion_id`) REFERENCES `emotions`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "tableName": "human_needs",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `i_18_key` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "i18Key",
+            "columnName": "i_18_key",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "entries_human_needs",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `entry_id` TEXT NOT NULL, `human_need_id` TEXT NOT NULL, `rank` INTEGER NOT NULL, FOREIGN KEY(`entry_id`) REFERENCES `entries`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`human_need_id`) REFERENCES `human_needs`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -279,15 +261,15 @@
             "notNull": true
           },
           {
-            "fieldPath": "emotionId",
-            "columnName": "emotion_id",
+            "fieldPath": "humanNeedId",
+            "columnName": "human_need_id",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "emotionType",
-            "columnName": "emotion_type",
-            "affinity": "TEXT",
+            "fieldPath": "rank",
+            "columnName": "rank",
+            "affinity": "INTEGER",
             "notNull": true
           }
         ],
@@ -311,11 +293,11 @@
             ]
           },
           {
-            "table": "emotions",
+            "table": "human_needs",
             "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
             "columns": [
-              "emotion_id"
+              "human_need_id"
             ],
             "referencedColumns": [
               "id"
@@ -327,7 +309,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e013a6b40add1511ec12f2b7de93b681')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '84cb5656c4d1d3bed833d1dd718f9ed9')"
     ]
   }
 }

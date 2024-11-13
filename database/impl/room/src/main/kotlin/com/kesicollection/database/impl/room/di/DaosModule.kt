@@ -1,11 +1,11 @@
 package com.kesicollection.database.impl.room.di
 
 import com.kesicollection.database.impl.room.KhDatabase
-import com.kesicollection.database.impl.room.dao.EmotionDao
 import com.kesicollection.database.impl.room.dao.EntryDao
-import com.kesicollection.database.impl.room.dao.EntryEmotionDao
+import com.kesicollection.database.impl.room.dao.EntryHumanNeedDao
 import com.kesicollection.database.impl.room.dao.EntryInfluencerDao
 import com.kesicollection.database.impl.room.dao.HabitDao
+import com.kesicollection.database.impl.room.dao.HumanNeedDao
 import com.kesicollection.database.impl.room.dao.InfluencerDao
 import dagger.Module
 import dagger.Provides
@@ -25,13 +25,14 @@ internal object DaosModule {
     fun providesInfluencerDao(database: KhDatabase): InfluencerDao = database.influencerDao()
 
     @Provides
-    fun providesEmotionDao(database: KhDatabase): EmotionDao = database.emotionDao()
-
-    @Provides
     fun providesEntryInfluencerDao(database: KhDatabase): EntryInfluencerDao =
         database.entryInfluencerDao()
 
     @Provides
-    fun providesEntryEmotionDao(database: KhDatabase): EntryEmotionDao =
-        database.entryEmotionDao()
+    fun providesHumanNeedDao(database: KhDatabase): HumanNeedDao =
+        database.humanNeedDao()
+
+    @Provides
+    fun providesEntryHumanNeedDao(database: KhDatabase): EntryHumanNeedDao =
+        database.entryHumanNeedDao()
 }

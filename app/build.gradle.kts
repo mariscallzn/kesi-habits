@@ -31,8 +31,6 @@ dependencies {
     implementation(projects.feature.addentry)
     implementation(projects.feature.habitpicker)
     implementation(projects.feature.createhabit)
-    implementation(projects.feature.emotionpicker)
-    implementation(projects.feature.createemotion)
     implementation(projects.feature.influencerpicker)
     implementation(projects.feature.createinfluencer)
 
