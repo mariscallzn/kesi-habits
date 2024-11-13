@@ -5,9 +5,12 @@ import com.kesicollection.core.model.Entry
 import com.kesicollection.core.model.EntryEmotion
 import com.kesicollection.core.model.EntryInfluencer
 import com.kesicollection.core.model.HabitType
+import com.kesicollection.core.model.Status
 import com.kesicollection.database.api.EntryDb
 import com.kesicollection.database.api.EntryEmotionDb
 import com.kesicollection.database.api.EntryInfluencerDb
+import com.kesicollection.domain.datetime.UpdateOffsetDateTimeWithMillis
+import com.kesicollection.domain.datetime.UpdateOffsetDateTimeWithTimePicker
 import javax.inject.Inject
 
 interface EntryRepository {
@@ -23,12 +26,20 @@ interface EntryRepository {
     )
 
     suspend fun getById(id: String): Entry
+    suspend fun updateEntryStatus(id: String, status: Status): Entry
+    suspend fun updateDate(id: String, millis: Long?)
+    suspend fun updateTime(
+        id: String, hour: Int,
+        minute: Int
+    )
 }
 
 internal class EntryRepositoryImpl @Inject constructor(
     private val entryDb: EntryDb,
     private val entryEmotionDb: EntryEmotionDb,
-    private val entryInfluencerDb: EntryInfluencerDb
+    private val entryInfluencerDb: EntryInfluencerDb,
+    private val updateOffsetDateTimeWithMillis: UpdateOffsetDateTimeWithMillis,
+    private val updateOffsetDateTimeWithTimePicker: UpdateOffsetDateTimeWithTimePicker,
 ) : EntryRepository {
     override suspend fun addOrUpdateEntry(entries: List<Entry>) = entryDb.upsertEntries(entries)
 
@@ -92,4 +103,26 @@ internal class EntryRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getById(id: String): Entry = entryDb.getById(id)
+
+    override suspend fun updateEntryStatus(id: String, status: Status): Entry {
+        val entry = getById(id).copy(status = status)
+        entryDb.update(entry)
+        return entry
+    }
+
+    override suspend fun updateDate(id: String, millis: Long?) {
+        millis?.let {
+            val entry = getById(id)
+            val updatedDate = updateOffsetDateTimeWithMillis(entry.recordedOn, millis)
+            entryDb.update(entry.copy(recordedOn = updatedDate))
+        }
+    }
+
+    override suspend fun updateTime(id: String, hour: Int, minute: Int) {
+        val entry = getById(id)
+        val updatedTime =
+            updateOffsetDateTimeWithTimePicker(entry.recordedOn, hour, minute)
+        entryDb.update(entry.copy(recordedOn = updatedTime))
+    }
+
 }

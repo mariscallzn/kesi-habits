@@ -1,5 +1,6 @@
 package com.kesicollection.feature.weeklyhabits
 
+import android.util.Log
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -15,6 +16,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kesicollection.core.designsystem.icon.KesiIcons
 import com.kesicollection.core.designsystem.state.ScaffoldDefinitionState
+import com.kesicollection.feature.weeklyhabits.navigation.WeeklyHabits
 
 /**
  * State full
@@ -23,6 +25,7 @@ import com.kesicollection.core.designsystem.state.ScaffoldDefinitionState
 @Composable
 internal fun WeeklyHabitsScreen(
     scaffoldDefinitionState: ScaffoldDefinitionState,
+    weeklyHabits: WeeklyHabits,
     addEntryClick: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: WeeklyHabitsViewModel = hiltViewModel()
@@ -30,6 +33,7 @@ internal fun WeeklyHabitsScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
+        Log.d("Andres", "WeeklyHabitsScreen: $weeklyHabits")
         viewModel.dispatch(ScreenAction.LoadCalendar())
         scaffoldDefinitionState.defineAppBarComposable {
             TopAppBar(title = {

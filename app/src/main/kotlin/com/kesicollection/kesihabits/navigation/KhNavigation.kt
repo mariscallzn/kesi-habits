@@ -24,6 +24,7 @@ import com.kesicollection.feature.habitpicker.navigation.HabitPicker
 import com.kesicollection.feature.habitpicker.navigation.habitPickerScreen
 import com.kesicollection.feature.habitpicker.navigation.navigateToHabitPicker
 import com.kesicollection.feature.weeklyhabits.navigation.WeeklyHabits
+import com.kesicollection.feature.weeklyhabits.navigation.navigateToWeeklyHabits
 import com.kesicollection.feature.weeklyhabits.navigation.weeklyHabitsScreen
 import com.kesicollection.influencerpicker.navigation.InfluencerPicker
 import com.kesicollection.influencerpicker.navigation.influencerPickerScreen
@@ -34,7 +35,7 @@ fun KhNavHost(
     scaffoldDefinitionState: ScaffoldDefinitionState,
     modifier: Modifier = Modifier
 ) {
-    val startDestination = WeeklyHabits
+    val startDestination = WeeklyHabits()
     val navController = rememberNavController()
 
     NavHost(navController, startDestination = startDestination) {
@@ -46,7 +47,11 @@ fun KhNavHost(
         addEntryScreen(
             scaffoldDefinitionState = scaffoldDefinitionState,
             onBackPressed = navController::popBackStack,
-            onAddHabitClick = { entryDraftId, habitId,type ->
+            onEntryCreated = { recordedOn ->
+                navController.popBackStack<WeeklyHabits>(true)
+                navController.navigateToWeeklyHabits(WeeklyHabits(recordedOn))
+            },
+            onAddHabitClick = { entryDraftId, habitId, type ->
                 navController.navigateToHabitPicker(
                     HabitPicker(type, entryDraftId, habitId)
                 )
@@ -54,7 +59,7 @@ fun KhNavHost(
             onAddEmotionClick = { entryDraftId, emotionIds, type ->
                 navController.navigateToEmotionPicker(EmotionPicker(entryDraftId, type, emotionIds))
             },
-            onAddInfluencerClick = {entryDraftId, influencerIds ->
+            onAddInfluencerClick = { entryDraftId, influencerIds ->
                 navController.navigateToInfluencerPicker(
                     InfluencerPicker(entryDraftId, influencerIds)
                 )
@@ -69,7 +74,7 @@ fun KhNavHost(
                     CreateHabit(type, entryDraftId)
                 )
             },
-            onHabitSelected = {entryDraftId,habitId,type ->
+            onHabitSelected = { entryDraftId, habitId, type ->
                 navController.popBackStack<AddEntry>(true)
                 navController.navigateToAddEntry(AddEntry(entryDraftId, habitId, type))
             },

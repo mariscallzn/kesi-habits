@@ -10,18 +10,20 @@ import com.kesicollection.core.redux.creator.createAsyncThunk
 import com.kesicollection.core.redux.creator.createStore
 import com.kesicollection.core.redux.creator.reducer
 import com.kesicollection.data.entry.EntryRepository
-import com.kesicollection.feature.addentry.domain.GetDateFromMillis
-import com.kesicollection.feature.addentry.domain.GetDateFromOffsetDateTime
-import com.kesicollection.feature.addentry.domain.GetTimeFromOffsetDateTime
-import com.kesicollection.feature.addentry.domain.GetTimeFromTimePicker
-import com.kesicollection.feature.addentry.domain.GetTimePairFromOffsetDateTime
+import com.kesicollection.domain.datetime.GetDateFromMillis
+import com.kesicollection.domain.datetime.GetDateFromOffsetDateTime
+import com.kesicollection.domain.datetime.GetFormattedOffsetDateTime
+import com.kesicollection.domain.datetime.GetTimeFromOffsetDateTime
+import com.kesicollection.domain.datetime.GetTimeFromTimePicker
+import com.kesicollection.domain.datetime.GetTimePairFromOffsetDateTime
+import com.kesicollection.feature.addentry.model.CreateDraftThunk
+import com.kesicollection.feature.addentry.model.UpdateTimeThunk
 import com.kesicollection.feature.addentry.navigation.AddEntry
 import com.kesicollection.feature.addentry.navigation.EntryDraftId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import java.time.OffsetDateTime
-import java.time.ZoneId
 import java.util.Locale
 import java.util.UUID
 import javax.inject.Inject
@@ -31,7 +33,10 @@ internal sealed class ScreenActions {
     data object Reset : ScreenActions()
     data class DefineLocale(val locale: Locale) : ScreenActions()
     data class ShowTimeDialog(val isShowing: Boolean) : ScreenActions()
-    data class ShowInitialDateTime(val offsetDateTime: OffsetDateTime, val locale: Locale) :
+    data class ShowInitialDateTime(
+        val offsetDateTime: OffsetDateTime,
+        val locale: Locale
+    ) :
         ScreenActions()
 
     data class ShowDateDialog(val isShowing: Boolean) : ScreenActions()
@@ -52,7 +57,7 @@ class AddEntryViewModel @Inject constructor(
     private val getTimeFromTimePicker: GetTimeFromTimePicker,
     private val getDateFromOffsetDateTime: GetDateFromOffsetDateTime,
     private val getTimePairFromOffsetDateTime: GetTimePairFromOffsetDateTime,
-    private val zoneId: ZoneId
+    private val getFormattedOffsetDateTime: GetFormattedOffsetDateTime
 ) : ViewModel() {
 
     private val store = createStore(
@@ -64,6 +69,7 @@ class AddEntryViewModel @Inject constructor(
                 is ScreenActions.DefineLocale -> state.copy(locale = action.locale)
                 is ScreenActions.ShowDateDialog -> state.copy(isDateShowing = action.isShowing)
                 is ScreenActions.ShowTimeDialog -> state.copy(isTimeShowing = action.isShowing)
+
                 is ScreenActions.DateSelected -> state.copy(
                     isDateShowing = false,
                     formattedDate = getDateFromMillis(action.millis, action.locale)
@@ -84,7 +90,8 @@ class AddEntryViewModel @Inject constructor(
                         action.offsetDateTime,
                         action.locale
                     ),
-                    formattedDate = getDateFromOffsetDateTime(action.offsetDateTime, action.locale)
+                    formattedDate = getDateFromOffsetDateTime(action.offsetDateTime, action.locale),
+                    time = getTimePairFromOffsetDateTime(action.offsetDateTime)
                 )
             }
         }
@@ -116,18 +123,23 @@ class AddEntryViewModel @Inject constructor(
                     influencers = it.influencers ?: emptyList(),
                     formattedDate = getDateFromOffsetDateTime(it.recordedOn, s.locale),
                     formattedTime = getTimeFromOffsetDateTime(it.recordedOn, s.locale),
-                    time = getTimePairFromOffsetDateTime(it.recordedOn)
+                    time = getTimePairFromOffsetDateTime(it.recordedOn),
+                    isSaveEnabled = it.habit != null
                 )
             } ?: s
         }
         store.builder.addCase(rejected) { s, _ -> s }
     }
 
-    val createDraft = createAsyncThunk<EntryDraftId, Locale>("draft") { args, options ->
+    val createDraft = createAsyncThunk<EntryDraftId, CreateDraftThunk>("draft") { args, options ->
         val draftId = "${UUID.randomUUID()}"
-        val dateTime = OffsetDateTime.now(zoneId)
-        options.dispatch(ScreenActions.ShowInitialDateTime(dateTime, args))
-        entryRepository.add(Entry(draftId, dateTime, Status.DRAFT))
+        options.dispatch(
+            ScreenActions.ShowInitialDateTime(
+                args.offsetDateTime,
+                args.locale
+            )
+        )
+        entryRepository.add(Entry(draftId, args.offsetDateTime, Status.DRAFT))
         draftId
     }.apply {
         store.builder.addCase(fulfilled) { state, action ->
@@ -137,6 +149,24 @@ class AddEntryViewModel @Inject constructor(
         store.builder.addCase(rejected) { s, _ ->
             s.copy(isSaveEnabled = false, draftId = "")
         }
+    }
+
+    val updateTime = createAsyncThunk<Unit, UpdateTimeThunk>("update-time") { args, opt ->
+        val state = opt.getState as AddEntryUiState
+        entryRepository.updateTime(state.draftId, args.hour, args.minute)
+        opt.dispatch(loadDraft(state.draftId))
+    }.apply {
+        store.builder.addCase(rejected) { s, a ->
+            s.also {
+                println("Andres " + a.payload.exceptionOrNull())
+            }
+        }
+    }
+
+    val updateDate = createAsyncThunk<Unit, Long?>("update-date") { args, opt ->
+        val state = opt.getState as AddEntryUiState
+        entryRepository.updateDate(state.draftId, args)
+        opt.dispatch(loadDraft(state.draftId))
     }
 
     val updateHabit =
@@ -158,6 +188,19 @@ class AddEntryViewModel @Inject constructor(
                 state.copy(isSaveEnabled = false)
             }
         }
+
+    val draftFinished = createAsyncThunk<OffsetDateTime, Unit>("draft-finished") { _, options ->
+        val state = options.getState as AddEntryUiState
+        entryRepository.updateEntryStatus(state.draftId, Status.ACTIVE).recordedOn
+    }.apply {
+        store.builder.addCase(pending) { s, _ -> s.copy(isSaveEnabled = false) }
+        store.builder.addCase(fulfilled) { s, a ->
+            a.payload.getOrNull()?.let { s.copy(recordedOn = getFormattedOffsetDateTime(it)) } ?: s
+        }
+        store.builder.addCase(rejected) { s, _ ->
+            s.copy(isSaveEnabled = false)
+        }
+    }
     //endregion
 
 

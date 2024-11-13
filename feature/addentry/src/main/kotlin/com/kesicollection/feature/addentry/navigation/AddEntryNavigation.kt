@@ -26,6 +26,7 @@ internal typealias EntryDraftId = String
 internal typealias HabitId = String
 internal typealias EmotionIds = String
 internal typealias InfluencersIds = String
+internal typealias RecordedOn = String
 
 fun NavController.navigateToAddEntry(addEntry: AddEntry, navOptions: NavOptions? = null) =
     navigate(route = addEntry, navOptions)
@@ -33,6 +34,7 @@ fun NavController.navigateToAddEntry(addEntry: AddEntry, navOptions: NavOptions?
 fun NavGraphBuilder.addEntryScreen(
     scaffoldDefinitionState: ScaffoldDefinitionState,
     onBackPressed: () -> Unit,
+    onEntryCreated: (RecordedOn) -> Unit,
     onAddHabitClick: (EntryDraftId, HabitId? ,HabitType) -> Unit,
     onAddEmotionClick: (EntryDraftId, List<EmotionIds>, EmotionType) -> Unit,
     onAddInfluencerClick: (EntryDraftId, List<InfluencersIds>) -> Unit,
@@ -44,6 +46,7 @@ fun NavGraphBuilder.addEntryScreen(
             scaffoldDefinitionState = scaffoldDefinitionState,
             onBackPress = onBackPressed,
             addEntry = addEntry,
+            onEntryCreated = onEntryCreated,
             onAddHabitClick = onAddHabitClick,
             onAddEmotionClick = onAddEmotionClick,
             onAddInfluencerClick = onAddInfluencerClick,

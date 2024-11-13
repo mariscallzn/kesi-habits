@@ -68,18 +68,24 @@ import com.kesicollection.core.model.HabitType
 import com.kesicollection.core.model.Influencer
 import com.kesicollection.core.model.Status
 import com.kesicollection.core.model.Valence
+import com.kesicollection.feature.addentry.model.CreateDraftThunk
+import com.kesicollection.feature.addentry.model.UpdateTimeThunk
 import com.kesicollection.feature.addentry.navigation.AddEntry
 import com.kesicollection.feature.addentry.navigation.EmotionIds
 import com.kesicollection.feature.addentry.navigation.EntryDraftId
 import com.kesicollection.feature.addentry.navigation.HabitId
 import com.kesicollection.feature.addentry.navigation.InfluencersIds
+import com.kesicollection.feature.addentry.navigation.RecordedOn
 import com.kesicollection.feature.addentry.utils.ClassificationBoxColor
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 @Composable
 fun AddEntryScreen(
     scaffoldDefinitionState: ScaffoldDefinitionState,
     onBackPress: () -> Unit,
     addEntry: AddEntry,
+    onEntryCreated: (RecordedOn) -> Unit,
     onAddHabitClick: (EntryDraftId, HabitId?, HabitType) -> Unit,
     onAddEmotionClick: (EntryDraftId, List<EmotionIds>, EmotionType) -> Unit,
     onAddInfluencerClick: (EntryDraftId, List<InfluencersIds>) -> Unit,
@@ -112,7 +118,12 @@ fun AddEntryScreen(
             addEntry.draftId.isNullOrBlank() &&
                     addEntry.habitId.isNullOrBlank() &&
                     addEntry.emotionIds.isEmpty() -> viewModel.dispatch(
-                viewModel.createDraft(locales[0])
+                viewModel.createDraft(
+                    CreateDraftThunk(
+                        OffsetDateTime.now(ZoneOffset.UTC),
+                        locales[0]
+                    )
+                )
             )
 
             addEntry.draftId?.isNotBlank() == true -> viewModel.dispatch(
@@ -123,7 +134,12 @@ fun AddEntryScreen(
         }
     }
 
+    LaunchedEffect(uiState.recordedOn) {
+        uiState.recordedOn?.let { onEntryCreated(it) }
+    }
+
     AddEntryScreen(
+        onAddEntry = { viewModel.dispatch(viewModel.draftFinished(Unit)) },
         onAddHabitClick = onAddHabitClick,
         onAddEmotionClick = onAddEmotionClick,
         onAddInfluencerClick = onAddInfluencerClick,
@@ -146,6 +162,7 @@ fun AddEntryScreen(
                     locales[0]
                 )
             )
+            viewModel.dispatch(viewModel.updateDate(millis))
         },
         onTimeSelected = { hour, minute, isAfternoon ->
             viewModel.dispatch(
@@ -155,6 +172,7 @@ fun AddEntryScreen(
                     isAfternoon
                 )
             )
+            viewModel.dispatch(viewModel.updateTime(UpdateTimeThunk(hour, minute)))
         },
         uiState = uiState,
         modifier = modifier
@@ -164,6 +182,7 @@ fun AddEntryScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEntryScreen(
+    onAddEntry: () -> Unit,
     onAddHabitClick: (EntryDraftId, HabitId?, HabitType) -> Unit,
     onAddEmotionClick: (EntryDraftId, List<EmotionIds>, EmotionType) -> Unit,
     onAddInfluencerClick: (EntryDraftId, List<InfluencersIds>) -> Unit,
@@ -302,7 +321,7 @@ fun AddEntryScreen(
         }
         CreationButton(
             enabled = uiState.isSaveEnabled,
-            onClick = {},
+            onClick = onAddEntry,
             modifier = Modifier.fillMaxWidth(),
             text = "add"
         )
@@ -679,6 +698,7 @@ fun TimePickerDialog(
 private fun AddEntryScreenPreview() {
     KesiTheme {
         AddEntryScreen(
+            onAddEntry = {},
             onAddEmotionClick = { _, _, _ -> },
             onAddHabitClick = { _, _, _ -> },
             onAddInfluencerClick = { _, _ -> },

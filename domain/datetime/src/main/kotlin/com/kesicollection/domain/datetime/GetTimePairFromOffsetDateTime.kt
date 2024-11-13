@@ -1,4 +1,4 @@
-package com.kesicollection.feature.addentry.domain
+package com.kesicollection.domain.datetime
 
 import java.time.OffsetDateTime
 import java.time.ZoneId

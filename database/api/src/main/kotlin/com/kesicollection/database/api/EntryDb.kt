@@ -8,4 +8,5 @@ interface EntryDb {
     suspend fun insert(entry: Entry): Long
     suspend fun updateHabit(entryId: String, habitId: String?, type: HabitType)
     suspend fun getById(id: String): Entry
+    suspend fun update(entry: Entry)
 }

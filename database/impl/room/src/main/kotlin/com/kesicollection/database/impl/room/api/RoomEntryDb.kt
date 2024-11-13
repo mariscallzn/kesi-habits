@@ -47,4 +47,8 @@ class RoomEntryDb @Inject constructor(
                 ).map { it.toEmotion() }
             )
     }
+
+    override suspend fun update(entry: Entry) {
+        entryDao.update(entry.toEntity())
+    }
 }

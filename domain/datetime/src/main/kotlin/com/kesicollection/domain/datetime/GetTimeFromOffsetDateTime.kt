@@ -1,14 +1,18 @@
-package com.kesicollection.feature.addentry.domain
+package com.kesicollection.domain.datetime
 
 import java.time.OffsetDateTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import javax.inject.Inject
 
-class GetTimeFromOffsetDateTime @Inject constructor() {
+class GetTimeFromOffsetDateTime @Inject constructor(
+    private val zoneId: ZoneId
+) {
 
     operator fun invoke(offsetDateTime: OffsetDateTime, locale: Locale): String {
         val formatter = DateTimeFormatter.ofPattern("h:mm a", locale)
-        return offsetDateTime.format(formatter)
+        val zonedDateTime = offsetDateTime.atZoneSameInstant(zoneId)
+        return zonedDateTime.format(formatter)
     }
 }

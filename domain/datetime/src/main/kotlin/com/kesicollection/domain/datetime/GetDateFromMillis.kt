@@ -1,5 +1,4 @@
-//This should be move to the domain module, but for the sake of speed it's placed here
-package com.kesicollection.feature.addentry.domain
+package com.kesicollection.domain.datetime
 
 import java.time.Instant
 import java.time.LocalDate

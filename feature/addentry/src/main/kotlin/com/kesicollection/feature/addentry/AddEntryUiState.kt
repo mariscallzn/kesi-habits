@@ -18,8 +18,9 @@ data class AddEntryUiState(
     val isDateShowing: Boolean = false,
     val formattedDate: String = "",
     val formattedTime: String = "",
-    val time: Pair<Int,Int> = 0 to 0,
-    val locale: Locale = Locale.getDefault()
+    val time: Pair<Int, Int> = 0 to 0,
+    val locale: Locale = Locale.getDefault(),
+    val recordedOn: String? = null,
 )
 
 val initialState = AddEntryUiState(
