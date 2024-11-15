@@ -30,7 +30,7 @@ data class EntryHumanNeedCrossRef(
     @ColumnInfo(name = "entry_id")
     val entryId: String,
     @ColumnInfo(name = "human_need_id")
-    val humanNeedId: String,
+    val humanNeedId: Int,
     val rank: Int
 )
 

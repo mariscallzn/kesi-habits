@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.Keyboard
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.rounded.Add
@@ -19,4 +20,5 @@ object KesiIcons {
     val Date = Icons.Filled.DateRange
     val Keyboard = Icons.Outlined.Keyboard
     val Schedule = Icons.Outlined.Schedule
+    val ChevronRight = Icons.Outlined.ChevronRight
 }

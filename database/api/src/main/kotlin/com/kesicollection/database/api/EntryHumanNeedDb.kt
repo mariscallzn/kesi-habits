@@ -6,4 +6,5 @@ interface EntryHumanNeedDb {
     suspend fun insert(entryHumanNeed: EntryHumanNeed): Long
     suspend fun getEntryHumanNeedByEntryId(entryId: String): List<EntryHumanNeed>
     suspend fun delete(id: Long)
+    suspend fun upsert(entryHumanNeed: List<EntryHumanNeed>)
 }

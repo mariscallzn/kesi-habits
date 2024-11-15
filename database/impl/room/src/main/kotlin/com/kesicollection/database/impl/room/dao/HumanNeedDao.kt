@@ -10,6 +10,12 @@ interface HumanNeedDao : BaseDao<HumanNeedEntity> {
     @Query("SELECT * FROM human_needs")
     suspend fun getAll(): List<HumanNeedEntity>
 
+    @Query("""
+        SELECT * FROM human_needs
+        WHERE id = :id
+    """)
+    suspend fun findById(id: Int): HumanNeedEntity
+
     @Query(
         """
             SELECT hn.id, hn.name, hn.i_18_key, ehn.rank as ranked FROM human_needs hn

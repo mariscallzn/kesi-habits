@@ -32,6 +32,7 @@
             <option value="$PROJECT_DIR$/data" />
             <option value="$PROJECT_DIR$/data/entry" />
             <option value="$PROJECT_DIR$/data/habit" />
+            <option value="$PROJECT_DIR$/data/humanneed" />
             <option value="$PROJECT_DIR$/data/influencer" />
             <option value="$PROJECT_DIR$/data/weekspaging" />
             <option value="$PROJECT_DIR$/database" />

@@ -5,23 +5,27 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kesicollection.core.designsystem.utils.TAG
 import com.kesicollection.core.model.Entry
+import com.kesicollection.core.model.HumanNeed
 import com.kesicollection.core.model.Status
 import com.kesicollection.core.redux.creator.createAsyncThunk
 import com.kesicollection.core.redux.creator.createStore
 import com.kesicollection.core.redux.creator.reducer
 import com.kesicollection.data.entry.EntryRepository
+import com.kesicollection.data.humanneed.HumanNeedRepository
 import com.kesicollection.domain.datetime.GetDateFromMillis
 import com.kesicollection.domain.datetime.GetDateFromOffsetDateTime
 import com.kesicollection.domain.datetime.GetFormattedOffsetDateTime
 import com.kesicollection.domain.datetime.GetTimeFromOffsetDateTime
 import com.kesicollection.domain.datetime.GetTimeFromTimePicker
 import com.kesicollection.domain.datetime.GetTimePairFromOffsetDateTime
+import com.kesicollection.feature.addentry.domain.SortHumanNeeds
 import com.kesicollection.feature.addentry.model.CreateDraftThunk
 import com.kesicollection.feature.addentry.model.UpdateTimeThunk
 import com.kesicollection.feature.addentry.navigation.AddEntry
 import com.kesicollection.feature.addentry.navigation.EntryDraftId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import java.time.OffsetDateTime
 import java.util.Locale
@@ -52,12 +56,14 @@ internal sealed class ScreenActions {
 @HiltViewModel
 class AddEntryViewModel @Inject constructor(
     private val entryRepository: EntryRepository,
+    private val humanNeedRepository: HumanNeedRepository,
     private val getDateFromMillis: GetDateFromMillis,
     private val getTimeFromOffsetDateTime: GetTimeFromOffsetDateTime,
     private val getTimeFromTimePicker: GetTimeFromTimePicker,
     private val getDateFromOffsetDateTime: GetDateFromOffsetDateTime,
     private val getTimePairFromOffsetDateTime: GetTimePairFromOffsetDateTime,
-    private val getFormattedOffsetDateTime: GetFormattedOffsetDateTime
+    private val getFormattedOffsetDateTime: GetFormattedOffsetDateTime,
+    private val sortHumanNeeds: SortHumanNeeds,
 ) : ViewModel() {
 
     private val store = createStore(
@@ -97,7 +103,9 @@ class AddEntryViewModel @Inject constructor(
         }
     )
 
-    val uiState = store.subscribe.stateIn(
+    val uiState = store.subscribe.onStart {
+        dispatch(loadHumanNeeds(Unit))
+    }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = initialState
@@ -122,7 +130,8 @@ class AddEntryViewModel @Inject constructor(
                     formattedDate = getDateFromOffsetDateTime(it.recordedOn, s.locale),
                     formattedTime = getTimeFromOffsetDateTime(it.recordedOn, s.locale),
                     time = getTimePairFromOffsetDateTime(it.recordedOn),
-                    isSaveEnabled = it.habit != null
+                    humanNeeds = it.humanNeeds ?: s.humanNeeds,
+                    isSaveEnabled = it.habit != null,
                 )
             } ?: s
         }
@@ -153,12 +162,6 @@ class AddEntryViewModel @Inject constructor(
         val state = opt.getState as AddEntryUiState
         entryRepository.updateTime(state.draftId, args.hour, args.minute)
         opt.dispatch(loadDraft(state.draftId))
-    }.apply {
-        store.builder.addCase(rejected) { s, a ->
-            s.also {
-                println("Andres " + a.payload.exceptionOrNull())
-            }
-        }
     }
 
     val updateDate = createAsyncThunk<Unit, Long?>("update-date") { args, opt ->
@@ -185,6 +188,12 @@ class AddEntryViewModel @Inject constructor(
             }
         }
 
+    val updateHumanNeed = createAsyncThunk<Unit, HumanNeed>("update-human-need") { args, options ->
+        val state = options.getState as AddEntryUiState
+        entryRepository.updateHumanNeeds(state.draftId, sortHumanNeeds(args, state.humanNeeds))
+        options.dispatch(loadDraft(state.draftId))
+    }
+
     val draftFinished = createAsyncThunk<OffsetDateTime, Unit>("draft-finished") { _, options ->
         val state = options.getState as AddEntryUiState
         entryRepository.updateEntryStatus(state.draftId, Status.ACTIVE).recordedOn
@@ -195,6 +204,14 @@ class AddEntryViewModel @Inject constructor(
         }
         store.builder.addCase(rejected) { s, _ ->
             s.copy(isSaveEnabled = false)
+        }
+    }
+
+    val loadHumanNeeds = createAsyncThunk<List<HumanNeed>, Unit>("load-human-needs") { _, _ ->
+        humanNeedRepository.fetch()
+    }.apply {
+        store.builder.addCase(fulfilled) { s, a ->
+            a.payload.getOrNull()?.let { s.copy(humanNeeds = it) } ?: s
         }
     }
     //endregion

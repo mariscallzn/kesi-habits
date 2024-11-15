@@ -4,11 +4,13 @@ import com.kesicollection.database.api.EntryDb
 import com.kesicollection.database.api.EntryHumanNeedDb
 import com.kesicollection.database.api.EntryInfluencerDb
 import com.kesicollection.database.api.HabitDb
+import com.kesicollection.database.api.HumanNeedDb
 import com.kesicollection.database.api.InfluencerDb
 import com.kesicollection.database.impl.room.api.RoomEntryDb
 import com.kesicollection.database.impl.room.api.RoomEntryHumanNeedDb
 import com.kesicollection.database.impl.room.api.RoomEntryInfluencerDb
 import com.kesicollection.database.impl.room.api.RoomHabitDb
+import com.kesicollection.database.impl.room.api.RoomHumanNeedDb
 import com.kesicollection.database.impl.room.api.RoomInfluencerDb
 import dagger.Binds
 import dagger.Module
@@ -46,6 +48,11 @@ abstract class AppModule {
     abstract fun bindsEntryHumanNeedDb(
         entryHumanNeedDb: RoomEntryHumanNeedDb
     ): EntryHumanNeedDb
+
+    @Binds
+    abstract fun bindsHumanNeedDb(
+        humanNeedDb: RoomHumanNeedDb
+    ): HumanNeedDb
 }
 
 @Module

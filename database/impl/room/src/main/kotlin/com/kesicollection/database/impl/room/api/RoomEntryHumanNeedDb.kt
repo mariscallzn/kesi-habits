@@ -20,4 +20,7 @@ class RoomEntryHumanNeedDb @Inject constructor(
         entryHumanNeedDao.delete(this)
     }
 
+    override suspend fun upsert(entryHumanNeed: List<EntryHumanNeed>) =
+        entryHumanNeedDao.upsertAll(entryHumanNeed.map { it.toEntity() })
+
 }

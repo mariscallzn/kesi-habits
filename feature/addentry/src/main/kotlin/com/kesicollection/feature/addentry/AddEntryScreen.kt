@@ -2,6 +2,7 @@ package com.kesicollection.feature.addentry
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,9 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -60,6 +59,7 @@ import com.kesicollection.core.designsystem.theme.KesiTheme
 import com.kesicollection.core.model.Classification
 import com.kesicollection.core.model.Habit
 import com.kesicollection.core.model.HabitType
+import com.kesicollection.core.model.HumanNeed
 import com.kesicollection.core.model.Influencer
 import com.kesicollection.feature.addentry.model.CreateDraftThunk
 import com.kesicollection.feature.addentry.model.UpdateTimeThunk
@@ -132,6 +132,7 @@ fun AddEntryScreen(
         onAddEntry = { viewModel.dispatch(viewModel.draftFinished(Unit)) },
         onAddHabitClick = onAddHabitClick,
         onAddInfluencerClick = onAddInfluencerClick,
+        onHumanNeedClick = { hn -> viewModel.dispatch(viewModel.updateHumanNeed(hn)) },
         onClearClick = { draftId, habitType ->
             viewModel.dispatch(
                 viewModel.updateHabit(
@@ -174,6 +175,7 @@ fun AddEntryScreen(
     onAddEntry: () -> Unit,
     onAddHabitClick: (EntryDraftId, HabitId?, HabitType) -> Unit,
     onAddInfluencerClick: (EntryDraftId, List<InfluencersIds>) -> Unit,
+    onHumanNeedClick: (HumanNeed) -> Unit,
     onClearClick: (EntryDraftId, HabitType) -> Unit,
     onDismissDateDialog: () -> Unit,
     onDismissTimeDialog: () -> Unit,
@@ -225,75 +227,137 @@ fun AddEntryScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .verticalScroll(rememberScrollState()),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
 
-        Text(
-            text = stringResource(R.string.select_habit),
-            style = MaterialTheme.typography.titleMedium,
-        )
-        if (uiState.coreHabit?.name?.isNotBlank() == true) HabitCard(
-            uiState.draftId,
-            onAddHabitClick,
-            onClearClick,
-            uiState.coreHabit,
-            HabitType.CORE
-        ) else DashedButton(
-            "",
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            onAddHabitClick(
-                uiState.draftId,
-                null,
-                HabitType.CORE,
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = stringResource(R.string.select_habit),
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(bottom = 4.dp)
             )
-        }
-
-        Text(
-            text = "What habit triggered you?",
-            style = MaterialTheme.typography.titleMedium,
-        )
-        if (uiState.triggerHabit?.name?.isNotBlank() == true) HabitCard(
-            uiState.draftId,
-            onAddHabitClick,
-            onClearClick,
-            uiState.triggerHabit,
-            HabitType.TRIGGER
-        ) else DashedButton(
-            "",
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            onAddHabitClick(
+            if (uiState.coreHabit?.name?.isNotBlank() == true) HabitCard(
                 uiState.draftId,
-                null,
-                HabitType.TRIGGER
-            )
-        }
-
-        Text(
-            text = "What influenced you to act?",
-            style = MaterialTheme.typography.titleMedium,
-        )
-        if (uiState.influencers.isNotEmpty()) {
-            InfluencerCard(uiState.influencers, {
-                onAddInfluencerClick(uiState.draftId, uiState.influencers.map { it.id })
-            }, modifier = Modifier.fillMaxWidth())
-        } else {
-            DashedButton(
-                "",
+                onAddHabitClick,
+                onClearClick,
+                uiState.coreHabit,
+                HabitType.CORE
+            ) else SelectButton(
+                "Select habit",
+                "Select habit",
                 modifier = Modifier.fillMaxWidth()
             ) {
-                onAddInfluencerClick(uiState.draftId, emptyList())
+                onAddHabitClick(
+                    uiState.draftId,
+                    null,
+                    HabitType.CORE,
+                )
             }
         }
-        CreationButton(
-            enabled = uiState.isSaveEnabled,
-            onClick = onAddEntry,
-            modifier = Modifier.fillMaxWidth(),
-            text = "add"
-        )
+
+        Column(modifier = Modifier.fillMaxWidth()) {
+
+            Text(
+                text = "What habit triggered you?",
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
+            if (uiState.triggerHabit?.name?.isNotBlank() == true) HabitCard(
+                uiState.draftId,
+                onAddHabitClick,
+                onClearClick,
+                uiState.triggerHabit,
+                HabitType.TRIGGER
+            ) else SelectButton(
+                "Optional",
+                "Optional",
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                onAddHabitClick(
+                    uiState.draftId,
+                    null,
+                    HabitType.TRIGGER
+                )
+            }
+        }
+
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = "What influenced you to act?",
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
+            if (uiState.influencers.isNotEmpty()) {
+                InfluencerCard(uiState.influencers, {
+                    onAddInfluencerClick(uiState.draftId, uiState.influencers.map { it.id })
+                }, modifier = Modifier.fillMaxWidth())
+            } else {
+                SelectButton(
+                    "Optional",
+                    "Optional",
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    onAddInfluencerClick(uiState.draftId, emptyList())
+                }
+            }
+        }
+
+        Column {
+            Text(
+                text = "What are you seeking 1 to 6?",
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
+            HumanNeeds(uiState.humanNeeds, onHumanNeedClick, modifier = Modifier.fillMaxWidth())
+        }
+
+
+        Box(modifier = Modifier.weight(1f)) {
+            CreationButton(
+                enabled = uiState.isSaveEnabled,
+                onClick = onAddEntry,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter),
+                text = "add"
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun HumanNeeds(
+    humanNeeds: List<HumanNeed>,
+    onHumanNeedClick: (HumanNeed) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .border(
+                BorderStroke(2.dp, MaterialTheme.colorScheme.primaryContainer),
+                shape = RoundedCornerShape(MaterialTheme.shapes.small.topStart)
+            )
+    ) {
+        FlowRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            humanNeeds.map { hn ->
+                FilterChip(selected = hn.ranked != -1, onClick = { onHumanNeedClick(hn) }, label = {
+                    Row {
+                        if (hn.ranked != -1) Text("#${hn.ranked}")
+                        Text(hn.name)
+                    }
+                },
+                    shape = RoundedCornerShape(MaterialTheme.shapes.large.topStart),
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+            }
+        }
     }
 }
 
@@ -421,30 +485,32 @@ fun InfoContainer(
 }
 
 @Composable
-fun DashedButton(
+fun SelectButton(
+    description: String,
     contentDescription: String,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
     DashedBox(
         MaterialTheme.colorScheme.primaryContainer,
-        2.dp, 12.dp, 4.dp,
-        innerPadding = 16.dp,
-        cornerRadius = MaterialTheme.shapes.large,
+        2.dp, 12.dp, 0.dp,
+        cornerRadius = MaterialTheme.shapes.small,
         onClick = onClick,
+        contentAlignment = Alignment.Center,
         modifier = modifier
     ) {
-        Icon(
-            KesiIcons.Add,
-            contentDescription = contentDescription,
-            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+        Row(
             modifier = Modifier
-                .background(
-                    MaterialTheme.colorScheme.primaryContainer,
-                    RoundedCornerShape(MaterialTheme.shapes.medium.topStart)
-                )
-                .padding(8.dp)
-        )
+                .fillMaxWidth()
+                .padding(vertical = 16.dp, horizontal = 8.dp)
+        ) {
+            Text(description, modifier = Modifier.weight(1f))
+            Icon(
+                KesiIcons.ChevronRight,
+                contentDescription = contentDescription,
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+        }
     }
 }
 
@@ -545,6 +611,7 @@ private fun AddEntryScreenPreview() {
             onAddEntry = {},
             onAddHabitClick = { _, _, _ -> },
             onAddInfluencerClick = { _, _ -> },
+            onHumanNeedClick = { _ -> },
             onClearClick = { _, _ -> },
             onDismissDateDialog = {},
             onDateSelected = {},

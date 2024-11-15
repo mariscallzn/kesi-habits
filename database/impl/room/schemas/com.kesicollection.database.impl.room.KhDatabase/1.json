@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "84cb5656c4d1d3bed833d1dd718f9ed9",
+    "identityHash": "16b9f64e80ef2ecc9dc930ddda155d85",
     "entities": [
       {
         "tableName": "habits",
@@ -246,7 +246,7 @@
       },
       {
         "tableName": "entries_human_needs",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `entry_id` TEXT NOT NULL, `human_need_id` TEXT NOT NULL, `rank` INTEGER NOT NULL, FOREIGN KEY(`entry_id`) REFERENCES `entries`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`human_need_id`) REFERENCES `human_needs`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `entry_id` TEXT NOT NULL, `human_need_id` INTEGER NOT NULL, `rank` INTEGER NOT NULL, FOREIGN KEY(`entry_id`) REFERENCES `entries`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`human_need_id`) REFERENCES `human_needs`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -263,7 +263,7 @@
           {
             "fieldPath": "humanNeedId",
             "columnName": "human_need_id",
-            "affinity": "TEXT",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -309,7 +309,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '84cb5656c4d1d3bed833d1dd718f9ed9')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '16b9f64e80ef2ecc9dc930ddda155d85')"
     ]
   }
 }

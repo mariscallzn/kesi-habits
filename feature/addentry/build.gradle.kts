@@ -10,5 +10,6 @@ android {
 dependencies {
     implementation(projects.core.redux)
     implementation(projects.data.entry)
+    implementation(projects.data.humanneed)
     implementation(projects.domain.datetime)
 }

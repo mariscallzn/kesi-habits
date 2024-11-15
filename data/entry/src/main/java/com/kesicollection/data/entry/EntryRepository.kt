@@ -1,11 +1,15 @@
 package com.kesicollection.data.entry
 
 import com.kesicollection.core.model.Entry
+import com.kesicollection.core.model.EntryHumanNeed
 import com.kesicollection.core.model.EntryInfluencer
 import com.kesicollection.core.model.HabitType
+import com.kesicollection.core.model.HumanNeed
 import com.kesicollection.core.model.Status
 import com.kesicollection.database.api.EntryDb
+import com.kesicollection.database.api.EntryHumanNeedDb
 import com.kesicollection.database.api.EntryInfluencerDb
+import com.kesicollection.database.api.HumanNeedDb
 import com.kesicollection.domain.datetime.UpdateOffsetDateTimeWithMillis
 import com.kesicollection.domain.datetime.UpdateOffsetDateTimeWithTimePicker
 import javax.inject.Inject
@@ -27,11 +31,15 @@ interface EntryRepository {
         id: String, hour: Int,
         minute: Int
     )
+
+    suspend fun updateHumanNeeds(id: String, humanNeeds: List<HumanNeed>)
 }
 
 internal class EntryRepositoryImpl @Inject constructor(
     private val entryDb: EntryDb,
     private val entryInfluencerDb: EntryInfluencerDb,
+    private val entryHumanNeedDb: EntryHumanNeedDb,
+    private val humanNeedDb: HumanNeedDb,
     private val updateOffsetDateTimeWithMillis: UpdateOffsetDateTimeWithMillis,
     private val updateOffsetDateTimeWithTimePicker: UpdateOffsetDateTimeWithTimePicker,
 ) : EntryRepository {
@@ -72,7 +80,10 @@ internal class EntryRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getById(id: String): Entry = entryDb.getById(id)
+    override suspend fun getById(id: String): Entry =
+        entryDb.getById(id).copy(humanNeeds = entryHumanNeedDb.getEntryHumanNeedByEntryId(id).map {
+            humanNeedDb.findById(it.humanNeedId).copy(ranked = it.rank)
+        })
 
     override suspend fun updateEntryStatus(id: String, status: Status): Entry {
         val entry = getById(id).copy(status = status)
@@ -93,6 +104,19 @@ internal class EntryRepositoryImpl @Inject constructor(
         val updatedTime =
             updateOffsetDateTimeWithTimePicker(entry.recordedOn, hour, minute)
         entryDb.update(entry.copy(recordedOn = updatedTime))
+    }
+
+    override suspend fun updateHumanNeeds(id: String, humanNeeds: List<HumanNeed>) {
+        val dbItems = entryHumanNeedDb.getEntryHumanNeedByEntryId(id)
+        val updatedNeeds = humanNeeds.map {
+            EntryHumanNeed(
+                dbItems.find { item -> item.entryId == id && item.humanNeedId == it.id }?.id ?: 0,
+                id,
+                it.id,
+                it.ranked
+            )
+        }
+        entryHumanNeedDb.upsert(updatedNeeds)
     }
 
 }

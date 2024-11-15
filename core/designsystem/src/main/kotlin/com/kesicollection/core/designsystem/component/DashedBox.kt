@@ -38,7 +38,6 @@ fun DashedBox(
     dashGap: Dp,
     phase: Dp = 0.dp,
     cornerRadius: CornerBasedShape = RoundedCornerShape(0.dp),
-    innerPadding: Dp = 0.dp,
     contentAlignment: Alignment = Alignment.Center,
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
@@ -48,7 +47,7 @@ fun DashedBox(
     val gap by animateDpAsState(if (isPressed) 0.dp else dashGap, label = "gap")
 
     Box(
-        contentAlignment = Alignment.Center,
+        contentAlignment = contentAlignment,
         modifier = Modifier
             .clip(cornerRadius)
             .clickable(enabled = onClick != null) { onClick?.invoke() }
@@ -85,12 +84,7 @@ fun DashedBox(
             }
 
     ) {
-        Box(
-            contentAlignment = contentAlignment,
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            content()
-        }
+        content()
     }
 }
 
