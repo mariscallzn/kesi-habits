@@ -1,6 +1,11 @@
 package com.kesicollection.feature.weeklyhabits
 
 import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -12,10 +17,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kesicollection.core.designsystem.icon.KesiIcons
 import com.kesicollection.core.designsystem.state.ScaffoldDefinitionState
+import com.kesicollection.core.model.Day
+import com.kesicollection.feature.weeklyhabits.componets.CalendarDay
 import com.kesicollection.feature.weeklyhabits.navigation.WeeklyHabits
 
 /**
@@ -32,9 +40,13 @@ internal fun WeeklyHabitsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    val locale = LocalConfiguration.current.locales[0]
+    LaunchedEffect(locale) {
+        viewModel.dispatch(ScreenAction.LoadCalendar(locale = locale))
+    }
+
     LaunchedEffect(Unit) {
         Log.d("Andres", "WeeklyHabitsScreen: $weeklyHabits")
-        viewModel.dispatch(ScreenAction.LoadCalendar())
         scaffoldDefinitionState.defineAppBarComposable {
             TopAppBar(title = {
                 Text(text = "Use string resources")
@@ -47,9 +59,13 @@ internal fun WeeklyHabitsScreen(
         }
     }
 
-    WeeklyHabitsScreen(uiState, scaffoldDefinitionState, { i ->
-        viewModel.dispatch(viewModel.watchPagingIndex(i))
-    }, modifier)
+    WeeklyHabitsScreen(
+        uiState = uiState,
+        onDaySelected = { day -> viewModel.dispatch(ScreenAction.SelectDay(day)) },
+        watchRealIndex = { i ->
+            viewModel.dispatch(viewModel.watchPagingIndex(i))
+        }, modifier = modifier
+    )
 }
 
 /**
@@ -58,7 +74,7 @@ internal fun WeeklyHabitsScreen(
 @Composable
 internal fun WeeklyHabitsScreen(
     uiState: WeeklyHabitsUiState,
-    scaffoldDefinitionState: ScaffoldDefinitionState,
+    onDaySelected: (Day) -> Unit,
     watchRealIndex: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -69,18 +85,25 @@ internal fun WeeklyHabitsScreen(
             initialPage = (Int.MAX_VALUE / 2)
         )
 
-    HorizontalPager(state = pagerState) { page ->
+    HorizontalPager(state = pagerState, modifier = modifier) { page ->
         val computeIndex = uiState.offsetIndex + (page - (Int.MAX_VALUE / 2))
         if (uiState.weeks.isNotEmpty()) {
             watchRealIndex(page - (Int.MAX_VALUE / 2))
-            Text(
-                text = "Offset ${uiState.offsetIndex} \n" +
-                        "Real Index ${page - (Int.MAX_VALUE / 2)} \n" +
-                        "${uiState.weeks[computeIndex].map { "${it.dayOfWeek} ${it.dayOfMonth}" }}",
-                modifier = modifier
-            )
+            Column(modifier = Modifier.fillMaxHeight()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    uiState.weeks[computeIndex].map {
+                        CalendarDay(
+                            day = it,
+                            isSelected = it == uiState.selectedDay,
+                            isCurrentDay = it == uiState.currentDay,
+                            onClick = { d -> onDaySelected(d) }
+                        )
+                    }
+                }
+            }
         }
     }
 }
-
-

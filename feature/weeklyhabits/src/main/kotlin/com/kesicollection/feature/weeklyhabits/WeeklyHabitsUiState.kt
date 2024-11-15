@@ -4,7 +4,10 @@ import com.kesicollection.core.model.Day
 
 data class WeeklyHabitsUiState(
     val offsetIndex: Int,
-    val weeks: List<List<Day>>
+    val weeks: List<List<Day>>,
+    val selectedDay: Day = Day("",""),
+    val currentDay: Day = Day("",""),
+
 )
 
 val initialState = WeeklyHabitsUiState(

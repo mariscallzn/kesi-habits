@@ -9,7 +9,8 @@ android {
 
 dependencies {
     implementation(projects.core.redux)
-    implementation(projects.data.habit)
+    implementation(projects.data.entry)
+    implementation(projects.domain.datetime)
     implementation(projects.data.weekspaging)
     implementation(projects.domain.weeklyhabits)
 }

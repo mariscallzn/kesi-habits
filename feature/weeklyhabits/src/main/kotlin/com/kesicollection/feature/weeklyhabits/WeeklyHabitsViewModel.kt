@@ -2,13 +2,15 @@ package com.kesicollection.feature.weeklyhabits
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kesicollection.core.model.Day
 import com.kesicollection.core.model.Week
 import com.kesicollection.core.redux.creator.createAsyncThunk
 import com.kesicollection.core.redux.creator.createStore
 import com.kesicollection.core.redux.creator.reducer
-import com.kesicollection.data.habit.HabitRepository
+import com.kesicollection.data.entry.EntryRepository
 import com.kesicollection.data.weekspaging.WeekPagingSource
 import com.kesicollection.data.weekspaging.model.PagingEvent
+import com.kesicollection.domain.datetime.GetDayFromOffsetDateTime
 import com.kesicollection.domain.weeklyhabits.GetDaysFromWeekUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,13 +20,19 @@ import java.time.DayOfWeek
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.temporal.TemporalAdjusters
+import java.util.Locale
 import javax.inject.Inject
 
 //region Screen Actions
 sealed class ScreenAction {
     data object Reset : ScreenAction()
-    data class LoadCalendar(val startFrom: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC)) :
+    data class LoadCalendar(
+        val startFrom: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC),
+        val locale: Locale
+    ) :
         ScreenAction()
+
+    data class SelectDay(val day: Day) : ScreenAction()
 
     data class HandlePagingEvent(val event: PagingEvent<Week>) : ScreenAction()
 }
@@ -32,9 +40,10 @@ sealed class ScreenAction {
 
 @HiltViewModel
 class WeeklyHabitsViewModel @Inject constructor(
-    private val habitRepository: HabitRepository,
+    private val entryRepository: EntryRepository,
     private val weekPagingSource: WeekPagingSource,
     private val getDaysFromWeekUseCase: GetDaysFromWeekUseCase,
+    private val getDayFromOffsetDateTime: GetDayFromOffsetDateTime
 ) : ViewModel() {
 
     private val store = createStore(
@@ -45,6 +54,7 @@ class WeeklyHabitsViewModel @Inject constructor(
                 is ScreenAction.Reset -> initialState
                 is ScreenAction.LoadCalendar -> loadCalendar(state, action)
                 is ScreenAction.HandlePagingEvent -> pagingEventHandler(state, action.event)
+                is ScreenAction.SelectDay -> state.copy(selectedDay = action.day)
             }
         }
     )
@@ -80,8 +90,15 @@ class WeeklyHabitsViewModel @Inject constructor(
                 )
             )
         )
-
-        return pagingEventHandler(state, pagingEvent)
+        val day = getDayFromOffsetDateTime(
+            action.startFrom,
+            action.locale
+        )
+        return pagingEventHandler(
+            state.copy(
+                currentDay = day, selectedDay = day
+            ), pagingEvent
+        )
     }
 
     private fun pagingEventHandler(
