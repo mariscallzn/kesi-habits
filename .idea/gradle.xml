@@ -41,7 +41,6 @@
             <option value="$PROJECT_DIR$/database/impl/room" />
             <option value="$PROJECT_DIR$/domain" />
             <option value="$PROJECT_DIR$/domain/datetime" />
-            <option value="$PROJECT_DIR$/domain/weeklyhabits" />
             <option value="$PROJECT_DIR$/feature" />
             <option value="$PROJECT_DIR$/feature/addentry" />
             <option value="$PROJECT_DIR$/feature/createhabit" />

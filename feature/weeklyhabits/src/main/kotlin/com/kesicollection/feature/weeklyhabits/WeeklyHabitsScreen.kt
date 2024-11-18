@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -49,7 +51,7 @@ internal fun WeeklyHabitsScreen(
         Log.d("Andres", "WeeklyHabitsScreen: $weeklyHabits")
         scaffoldDefinitionState.defineAppBarComposable {
             TopAppBar(title = {
-                Text(text = "Use string resources")
+                Text(text = uiState.displayedDate)
             })
         }
         scaffoldDefinitionState.defineFabComposable {
@@ -61,7 +63,7 @@ internal fun WeeklyHabitsScreen(
 
     WeeklyHabitsScreen(
         uiState = uiState,
-        onDaySelected = { day -> viewModel.dispatch(ScreenAction.SelectDay(day)) },
+        onDaySelected = { day -> viewModel.dispatch(ScreenAction.SelectDay(day, locale)) },
         watchRealIndex = { i ->
             viewModel.dispatch(viewModel.watchPagingIndex(i))
         }, modifier = modifier
@@ -78,18 +80,17 @@ internal fun WeeklyHabitsScreen(
     watchRealIndex: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-
     val pagerState =
         rememberPagerState(
             pageCount = { Int.MAX_VALUE },
             initialPage = (Int.MAX_VALUE / 2)
         )
 
-    HorizontalPager(state = pagerState, modifier = modifier) { page ->
-        val computeIndex = uiState.offsetIndex + (page - (Int.MAX_VALUE / 2))
-        if (uiState.weeks.isNotEmpty()) {
-            watchRealIndex(page - (Int.MAX_VALUE / 2))
-            Column(modifier = Modifier.fillMaxHeight()) {
+    Column(modifier = modifier.fillMaxHeight()) {
+        HorizontalPager(state = pagerState) { page ->
+            val computeIndex = uiState.offsetIndex + (page - (Int.MAX_VALUE / 2))
+            if (uiState.weeks.isNotEmpty()) {
+                watchRealIndex(page - (Int.MAX_VALUE / 2))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceAround
@@ -105,5 +106,12 @@ internal fun WeeklyHabitsScreen(
                 }
             }
         }
+
+        LazyColumn(modifier = Modifier.weight(1f)) {
+            items(uiState.entries[uiState.selectedDay] ?: emptyList()) { item ->
+                Text("${item.habit?.name} ${item.recordedOn}")
+            }
+        }
+
     }
 }

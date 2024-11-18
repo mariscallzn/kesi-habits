@@ -84,9 +84,6 @@ class CreateInfluencerViewModel @Inject constructor(
         store.builder.addCase(fulfilled) { state, action ->
             action.payload.getOrNull()?.let { state.copy(createdInfluencerId = it) } ?: state
         }
-        store.builder.addCase(rejected) { state, a ->
-            println("Andres ${a.payload.exceptionOrNull()}")
-            state }
     }
     //endregion
 }

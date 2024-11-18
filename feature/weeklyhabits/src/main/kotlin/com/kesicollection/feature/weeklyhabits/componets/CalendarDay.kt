@@ -65,7 +65,8 @@ fun CalendarDay(
                             .align(Alignment.BottomCenter)
                             .background(
                                 color = MaterialTheme.colorScheme.secondary,
-                                shape = RoundedCornerShape( 4.dp,4.dp
+                                shape = RoundedCornerShape(
+                                    4.dp, 4.dp
                                 )
                             )
                     )
@@ -79,7 +80,7 @@ fun CalendarDay(
 @Composable
 private fun CalendarDayPreviewSelected() {
     KesiTheme(dynamicColor = false) {
-        CalendarDay(day = Day("Tue", "12"), isSelected = true, isCurrentDay = true)
+        CalendarDay(day = Day("Tue", "12", ""), isSelected = true, isCurrentDay = true)
     }
 
 }
@@ -87,7 +88,7 @@ private fun CalendarDayPreviewSelected() {
 @DarkLightPreviews
 @Composable
 private fun CalendarDayPreviewUnSelected() {
-    KesiTheme(dynamicColor = false){
-        CalendarDay(day = Day("Tue", "12"), isSelected = false, isCurrentDay = true)
+    KesiTheme(dynamicColor = false) {
+        CalendarDay(day = Day("Tue", "12", ""), isSelected = false, isCurrentDay = true)
     }
 }

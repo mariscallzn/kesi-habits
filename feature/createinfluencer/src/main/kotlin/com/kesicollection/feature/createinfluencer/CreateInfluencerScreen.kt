@@ -46,7 +46,6 @@ fun CreateInfluencerScreen(
 
     LaunchedEffect(uiState.createdInfluencerId) {
         if (uiState.createdInfluencerId.isNotBlank()) {
-            println("Andres ${uiState.createdInfluencerId}")
             onCreateInfluencerClick(createInfluencer.entryDraftId, uiState.createdInfluencerId)
         }
     }

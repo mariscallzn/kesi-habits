@@ -3,15 +3,18 @@ package com.kesicollection.feature.weeklyhabits
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kesicollection.core.model.Day
+import com.kesicollection.core.model.Entry
 import com.kesicollection.core.model.Week
 import com.kesicollection.core.redux.creator.createAsyncThunk
 import com.kesicollection.core.redux.creator.createStore
 import com.kesicollection.core.redux.creator.reducer
-import com.kesicollection.data.entry.EntryRepository
 import com.kesicollection.data.weekspaging.WeekPagingSource
 import com.kesicollection.data.weekspaging.model.PagingEvent
 import com.kesicollection.domain.datetime.GetDayFromOffsetDateTime
-import com.kesicollection.domain.weeklyhabits.GetDaysFromWeekUseCase
+import com.kesicollection.domain.datetime.GetDaysFromWeekUseCase
+import com.kesicollection.domain.datetime.GetDisplayedDateFromOffsetDateTime
+import com.kesicollection.domain.datetime.GetOffsetDateTimeFromIsoFormat
+import com.kesicollection.feature.weeklyhabits.domain.MapEntryDays
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
@@ -32,7 +35,7 @@ sealed class ScreenAction {
     ) :
         ScreenAction()
 
-    data class SelectDay(val day: Day) : ScreenAction()
+    data class SelectDay(val day: Day, val locale: Locale) : ScreenAction()
 
     data class HandlePagingEvent(val event: PagingEvent<Week>) : ScreenAction()
 }
@@ -40,10 +43,12 @@ sealed class ScreenAction {
 
 @HiltViewModel
 class WeeklyHabitsViewModel @Inject constructor(
-    private val entryRepository: EntryRepository,
     private val weekPagingSource: WeekPagingSource,
+    private val mapEntryDays: MapEntryDays,
     private val getDaysFromWeekUseCase: GetDaysFromWeekUseCase,
-    private val getDayFromOffsetDateTime: GetDayFromOffsetDateTime
+    private val getDayFromOffsetDateTime: GetDayFromOffsetDateTime,
+    private val getDisplayedDateFromOffsetDateTime: GetDisplayedDateFromOffsetDateTime,
+    private val getOffsetDateTimeFromIsoFormat: GetOffsetDateTimeFromIsoFormat
 ) : ViewModel() {
 
     private val store = createStore(
@@ -53,8 +58,19 @@ class WeeklyHabitsViewModel @Inject constructor(
             when (action) {
                 is ScreenAction.Reset -> initialState
                 is ScreenAction.LoadCalendar -> loadCalendar(state, action)
-                is ScreenAction.HandlePagingEvent -> pagingEventHandler(state, action.event)
-                is ScreenAction.SelectDay -> state.copy(selectedDay = action.day)
+                is ScreenAction.HandlePagingEvent -> pagingEventHandler(
+                    state,
+                    action.event,
+                    state.currentLocale
+                )
+
+                is ScreenAction.SelectDay -> state.copy(
+                    selectedDay = action.day,
+                    displayedDate = getDisplayedDateFromOffsetDateTime(
+                        getOffsetDateTimeFromIsoFormat(action.day.rawUTCDateTime),
+                        action.locale
+                    )
+                )
             }
         }
     )
@@ -82,10 +98,10 @@ class WeeklyHabitsViewModel @Inject constructor(
         state: WeeklyHabitsUiState,
         action: ScreenAction.LoadCalendar
     ): WeeklyHabitsUiState {
-        //TODO: Here we have to read the start day from settings repo
         val pagingEvent = weekPagingSource.startFrom(
             action.startFrom.with(
                 TemporalAdjusters.previousOrSame(
+                    //TODO: Here we have to read the start day from settings repo
                     DayOfWeek.MONDAY
                 )
             )
@@ -96,31 +112,39 @@ class WeeklyHabitsViewModel @Inject constructor(
         )
         return pagingEventHandler(
             state.copy(
-                currentDay = day, selectedDay = day
-            ), pagingEvent
+                currentLocale = action.locale,
+                currentDay = day,
+                selectedDay = day,
+                displayedDate = getDisplayedDateFromOffsetDateTime(action.startFrom, action.locale),
+            ), pagingEvent, action.locale
         )
     }
 
     private fun pagingEventHandler(
         state: WeeklyHabitsUiState,
-        event: PagingEvent<Week>
+        event: PagingEvent<Week>, locale: Locale
     ): WeeklyHabitsUiState {
         return when (event) {
             is PagingEvent.Appended -> {
-                //TODO: Dispatch data fetching from DB
+                dispatch(fetchEntriesByWeek(event.newData))
                 state.copy(
                     offsetIndex = event.initialOffset,
                     weeks = state.weeks +
-                            event.newData.map { week -> getDaysFromWeekUseCase(week) }
+                            event.newData.map { week -> getDaysFromWeekUseCase(week, locale) }
                 )
             }
 
             is PagingEvent.Initial -> state
             is PagingEvent.Prepended -> {
-                //TODO: Dispatch data fetching from DB
+                dispatch(fetchEntriesByWeek(event.newData))
                 state.copy(
                     offsetIndex = event.updatedComputedIndex,
-                    weeks = event.newData.map { week -> getDaysFromWeekUseCase(week) } + state.weeks
+                    weeks = event.newData.map { week ->
+                        getDaysFromWeekUseCase(
+                            week,
+                            locale
+                        )
+                    } + state.weeks
                 )
             }
         }
@@ -131,6 +155,16 @@ class WeeklyHabitsViewModel @Inject constructor(
     val watchPagingIndex = createAsyncThunk<Unit, Int>("watch-index") { args, _ ->
         weekPagingSource.watch(args)
     }
+
+    val fetchEntriesByWeek =
+        createAsyncThunk<Map<Day, List<Entry>>, List<Week>>("fetch-entries") { args, opt ->
+            val state = opt.getState as WeeklyHabitsUiState
+            mapEntryDays(args, state.currentLocale)
+        }.apply {
+            store.builder.addCase(fulfilled) { s, a ->
+                a.payload.getOrNull()?.let { s.copy(entries = it) } ?: s
+            }
+        }
     //endregion
 
     override fun onCleared() {

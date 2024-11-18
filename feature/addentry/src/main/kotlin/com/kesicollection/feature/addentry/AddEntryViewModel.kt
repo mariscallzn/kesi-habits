@@ -14,7 +14,7 @@ import com.kesicollection.data.entry.EntryRepository
 import com.kesicollection.data.humanneed.HumanNeedRepository
 import com.kesicollection.domain.datetime.GetDateFromMillis
 import com.kesicollection.domain.datetime.GetDateFromOffsetDateTime
-import com.kesicollection.domain.datetime.GetFormattedOffsetDateTime
+import com.kesicollection.domain.datetime.GetIsoFormatFromOffsetDateTime
 import com.kesicollection.domain.datetime.GetTimeFromOffsetDateTime
 import com.kesicollection.domain.datetime.GetTimeFromTimePicker
 import com.kesicollection.domain.datetime.GetTimePairFromOffsetDateTime
@@ -62,7 +62,7 @@ class AddEntryViewModel @Inject constructor(
     private val getTimeFromTimePicker: GetTimeFromTimePicker,
     private val getDateFromOffsetDateTime: GetDateFromOffsetDateTime,
     private val getTimePairFromOffsetDateTime: GetTimePairFromOffsetDateTime,
-    private val getFormattedOffsetDateTime: GetFormattedOffsetDateTime,
+    private val getIsoFormatFromOffsetDateTime: GetIsoFormatFromOffsetDateTime,
     private val sortHumanNeeds: SortHumanNeeds,
 ) : ViewModel() {
 
@@ -116,7 +116,7 @@ class AddEntryViewModel @Inject constructor(
     }
 
     //region Async Thunks
-    val loadDraft = createAsyncThunk<Entry, String>("load-draft") { entryId, _ ->
+    val loadDraft = createAsyncThunk<Entry?, String>("load-draft") { entryId, _ ->
         entryRepository.getById(entryId)
     }.apply {
         store.builder.addCase(pending) { s, _ -> s }
@@ -194,13 +194,13 @@ class AddEntryViewModel @Inject constructor(
         options.dispatch(loadDraft(state.draftId))
     }
 
-    val draftFinished = createAsyncThunk<OffsetDateTime, Unit>("draft-finished") { _, options ->
+    val draftFinished = createAsyncThunk<OffsetDateTime?, Unit>("draft-finished") { _, options ->
         val state = options.getState as AddEntryUiState
-        entryRepository.updateEntryStatus(state.draftId, Status.ACTIVE).recordedOn
+        entryRepository.updateEntryStatus(state.draftId, Status.ACTIVE)?.recordedOn
     }.apply {
         store.builder.addCase(pending) { s, _ -> s.copy(isSaveEnabled = false) }
         store.builder.addCase(fulfilled) { s, a ->
-            a.payload.getOrNull()?.let { s.copy(recordedOn = getFormattedOffsetDateTime(it)) } ?: s
+            a.payload.getOrNull()?.let { s.copy(recordedOn = getIsoFormatFromOffsetDateTime(it)) } ?: s
         }
         store.builder.addCase(rejected) { s, _ ->
             s.copy(isSaveEnabled = false)
