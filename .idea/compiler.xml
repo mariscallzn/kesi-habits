@@ -5,6 +5,7 @@
       <module name="kesihabits.domain.addentry" target="21" />
       <module name="kesihabits.domain.addentry.main" target="11" />
       <module name="kesihabits.domain.addentry.test" target="11" />
+      <module name="kesihabits.domain.weeklyhabits" target="21" />
       <module name="kesihabits.feature.createemotion" target="21" />
       <module name="kesihabits.feature.emotionpicker" target="21" />
     </bytecodeTargetLevel>

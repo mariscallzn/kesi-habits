@@ -98,5 +98,10 @@ class RoomEntryDb @Inject constructor(
     override suspend fun getByDatetimeRange(
         start: OffsetDateTime,
         end: OffsetDateTime
-    ): List<Entry> = entryDao.findEntriesByDatetimeRange(start, end).map { it.toEntry() }
+    ): List<Entry> = entryDao.findEntriesByDatetimeRange(start, end).map { entry ->
+        entry.toEntry().copy(
+            influencers = influencerDao.getInfluencersForEntry(entry.id).map { it.toInfluencer() },
+            humanNeeds = humanNeedDao.getHumanNeedsByEntryId(entry.id).map { it.toHumanNeed() }
+        )
+    }
 }

@@ -67,6 +67,7 @@ interface EntryDao : BaseDao<EntryEntity> {
         LEFT JOIN habits t ON e.triggered_by_habit_id = t.id
         WHERE recordedOn BETWEEN :start AND :end
         AND e.status = :status
+        ORDER BY datetime(recordedOn) ASC
     """
     )
     suspend fun findEntriesByDatetimeRange(

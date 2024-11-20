@@ -20,7 +20,7 @@ interface HumanNeedDao : BaseDao<HumanNeedEntity> {
         """
             SELECT hn.id, hn.name, hn.i_18_key, ehn.rank as ranked FROM human_needs hn
             INNER JOIN entries_human_needs ehn ON hn.id = ehn.human_need_id
-            WHERE ehn.entry_id = :entryId
+            WHERE ehn.entry_id = :entryId AND ranked != -1
         """
     )
     suspend fun getHumanNeedsByEntryId(entryId: String): List<HumanNeedEntity>

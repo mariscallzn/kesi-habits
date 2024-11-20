@@ -2,8 +2,8 @@ package com.kesicollection.feature.weeklyhabits
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kesicollection.core.model.Classification
 import com.kesicollection.core.model.Day
-import com.kesicollection.core.model.Entry
 import com.kesicollection.core.model.Week
 import com.kesicollection.core.redux.creator.createAsyncThunk
 import com.kesicollection.core.redux.creator.createStore
@@ -14,7 +14,9 @@ import com.kesicollection.domain.datetime.GetDayFromOffsetDateTime
 import com.kesicollection.domain.datetime.GetDaysFromWeekUseCase
 import com.kesicollection.domain.datetime.GetDisplayedDateFromOffsetDateTime
 import com.kesicollection.domain.datetime.GetOffsetDateTimeFromIsoFormat
+import com.kesicollection.domain.datetime.GetTimeFromOffsetDateTime
 import com.kesicollection.feature.weeklyhabits.domain.MapEntryDays
+import com.kesicollection.feature.weeklyhabits.model.EntryItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
@@ -48,7 +50,8 @@ class WeeklyHabitsViewModel @Inject constructor(
     private val getDaysFromWeekUseCase: GetDaysFromWeekUseCase,
     private val getDayFromOffsetDateTime: GetDayFromOffsetDateTime,
     private val getDisplayedDateFromOffsetDateTime: GetDisplayedDateFromOffsetDateTime,
-    private val getOffsetDateTimeFromIsoFormat: GetOffsetDateTimeFromIsoFormat
+    private val getOffsetDateTimeFromIsoFormat: GetOffsetDateTimeFromIsoFormat,
+    private val getTimeFromOffsetDateTime: GetTimeFromOffsetDateTime
 ) : ViewModel() {
 
     private val store = createStore(
@@ -157,9 +160,17 @@ class WeeklyHabitsViewModel @Inject constructor(
     }
 
     val fetchEntriesByWeek =
-        createAsyncThunk<Map<Day, List<Entry>>, List<Week>>("fetch-entries") { args, opt ->
+        createAsyncThunk<Map<Day, List<EntryItem>>, List<Week>>("fetch-entries") { args, opt ->
             val state = opt.getState as WeeklyHabitsUiState
-            mapEntryDays(args, state.currentLocale)
+            mapEntryDays(args, state.currentLocale).mapValues { (_, entries) ->
+                entries.map { entry ->
+                    EntryItem(title = entry.habit?.name ?: "",
+                        humanNeeds = entry.humanNeeds?.map { it.name }
+                            ?: emptyList(),
+                        time = getTimeFromOffsetDateTime(entry.recordedOn, state.currentLocale),
+                        classification = entry.habit?.classification ?: Classification.NEUTRAL)
+                }
+            }
         }.apply {
             store.builder.addCase(fulfilled) { s, a ->
                 a.payload.getOrNull()?.let { s.copy(entries = it) } ?: s

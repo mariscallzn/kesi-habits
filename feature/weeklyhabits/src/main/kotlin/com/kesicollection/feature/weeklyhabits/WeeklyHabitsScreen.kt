@@ -1,11 +1,13 @@
 package com.kesicollection.feature.weeklyhabits
 
-import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
@@ -19,13 +21,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kesicollection.core.designsystem.icon.KesiIcons
 import com.kesicollection.core.designsystem.state.ScaffoldDefinitionState
 import com.kesicollection.core.model.Day
 import com.kesicollection.feature.weeklyhabits.componets.CalendarDay
+import com.kesicollection.feature.weeklyhabits.componets.EntryItem
 import com.kesicollection.feature.weeklyhabits.navigation.WeeklyHabits
 
 /**
@@ -48,7 +53,6 @@ internal fun WeeklyHabitsScreen(
     }
 
     LaunchedEffect(Unit) {
-        Log.d("Andres", "WeeklyHabitsScreen: $weeklyHabits")
         scaffoldDefinitionState.defineAppBarComposable {
             TopAppBar(title = {
                 Text(text = uiState.displayedDate)
@@ -107,11 +111,19 @@ internal fun WeeklyHabitsScreen(
             }
         }
 
+        //TODO: Pager logic to move between days
         LazyColumn(modifier = Modifier.weight(1f)) {
             items(uiState.entries[uiState.selectedDay] ?: emptyList()) { item ->
-                Text("${item.habit?.name} ${item.recordedOn}")
+                EntryItem(item)
+                if (uiState.entries[uiState.selectedDay]?.last()?.equals(item) != true) {
+                    Spacer(
+                        modifier = Modifier
+                            .height(1.dp)
+                            .fillMaxWidth()
+                            .background(Color.Gray.copy(alpha = 0.2f))
+                    )
+                }
             }
         }
-
     }
 }

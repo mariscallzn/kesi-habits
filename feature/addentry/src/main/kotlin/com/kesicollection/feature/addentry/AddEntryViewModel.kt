@@ -130,7 +130,7 @@ class AddEntryViewModel @Inject constructor(
                     formattedDate = getDateFromOffsetDateTime(it.recordedOn, s.locale),
                     formattedTime = getTimeFromOffsetDateTime(it.recordedOn, s.locale),
                     time = getTimePairFromOffsetDateTime(it.recordedOn),
-                    humanNeeds = it.humanNeeds ?: s.humanNeeds,
+                    humanNeeds = it.humanNeeds?.ifEmpty { s.humanNeeds } ?: s.humanNeeds,
                     isSaveEnabled = it.habit != null,
                 )
             } ?: s
